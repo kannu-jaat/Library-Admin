@@ -3,188 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Admin - Dashboard</title>
+    <title>Admin Dashboard - Library System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Neon Highlights for Dashboard */
-        .neon-border {
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
-        }
-        .neon-text {
-            text-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
-        }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 255, 255, 0.15);
-            border-color: rgba(0, 255, 255, 0.8);
-        }
-        /* Custom Scrollbar for dark theme */
-        ::-webkit-scrollbar { width: 6px; }
+        /* Premium Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Neon Hover Effects for Sidebar */
+        .nav-item { transition: all 0.3s ease; border-left: 3px solid transparent; }
+        .nav-item:hover, .nav-item.active { 
+            background: rgba(0, 255, 255, 0.1); 
+            border-left: 3px solid #00ffff;
+            color: #00ffff;
+            box-shadow: inset 10px 0 15px -10px rgba(0, 255, 255, 0.3);
+        }
+
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 255, 255, 0.1);
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-200 h-screen overflow-hidden flex font-sans">
+<body class="bg-slate-900 text-slate-200 h-screen flex overflow-hidden font-sans">
 
-    <!-- SIDEBAR -->
-    <aside class="w-64 bg-slate-800 flex flex-col neon-border relative z-20">
-        <!-- Logo Area -->
-        <div class="h-20 flex items-center justify-center border-b border-slate-700">
-            <svg class="w-8 h-8 text-amber-500 mr-2 drop-shadow-[0_0_8px_rgba(249,115,22,0.8)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-            <span class="text-xl font-bold tracking-widest text-white">ADMIN<span class="text-cyan-400">OS</span></span>
+    <!-- SIDEBAR (Admin Rights & Navigation) -->
+    <aside class="w-72 bg-slate-800 flex flex-col justify-between border-r border-slate-700 hidden md:flex z-20">
+        <div>
+            <!-- Admin Logo -->
+            <div class="h-20 flex items-center justify-center border-b border-slate-700 bg-slate-900/50">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full border border-amber-500 shadow-[0_0_10px_rgba(249,115,22,0.5)] flex items-center justify-center bg-black">
+                        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    </div>
+                    <span class="text-xl font-bold tracking-widest text-white">ADMIN<span class="text-cyan-400">PRO</span></span>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="mt-4 flex flex-col space-y-1">
+                <a href="#" class="nav-item active flex items-center px-6 py-3 text-cyan-400 bg-slate-800/50">
+                    <span class="text-xl mr-3">📊</span> Dashboard Overview
+                </a>
+                
+                <div class="px-6 py-2 mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Student Management</div>
+                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">✅</span> Pending Approvals
+                </a>
+                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">📝</span> Add Manual Entry
+                </a>
+                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">👥</span> All Students Data
+                </a>
+
+                <div class="px-6 py-2 mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Library Operations</div>
+                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">🪑</span> Seat Management
+                </a>
+                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">💳</span> Fees & Approvals
+                </a>
+                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">📱</span> QR & Attendance
+                </a>
+                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">🔔</span> Send Notifications
+                </a>
+            </nav>
         </div>
 
-        <!-- Navigation Links -->
-        <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-2">
-            <!-- Active Link -->
-            <a href="#" class="flex items-center px-4 py-3 bg-cyan-900/30 text-cyan-300 border-l-4 border-cyan-400 rounded-r-lg transition-colors">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                Dashboard
-            </a>
-            <!-- Inactive Links -->
-            <a href="#" class="flex items-center px-4 py-3 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg transition-colors">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                Students
-            </a>
-            <a href="#" class="flex items-center px-4 py-3 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg transition-colors">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                Seat Matrix
-            </a>
-            <a href="#" class="flex items-center px-4 py-3 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg transition-colors">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Fees & Payments
-            </a>
-            <a href="#" class="flex items-center px-4 py-3 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg transition-colors">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-                QR Generator
-            </a>
-        </nav>
+        <!-- Logout Button -->
+        <div class="p-4 border-t border-slate-700 bg-slate-900/30">
+            <button id="logoutBtn" class="w-full flex items-center justify-center px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors border border-transparent hover:border-red-500/30">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                Secure Logout
+            </button>
+        </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
-    <div class="flex-1 flex flex-col relative">
-        <!-- TOP HEADER -->
-        <header class="h-20 bg-slate-800/50 backdrop-blur-md border-b border-slate-700 flex items-center justify-between px-8 relative z-10">
-            <div>
-                <h2 class="text-xl font-bold text-white tracking-wide">Command Center</h2>
-                <p id="currentDate" class="text-xs text-cyan-400 font-mono mt-1">August 03, 2026</p>
-            </div>
-            
-            <div class="flex items-center space-x-6">
-                <!-- Notifications -->
-                <button class="relative text-slate-400 hover:text-amber-400 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                    <span class="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-                    </span>
-                </button>
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[url('https://backiee.com/static/wallpapers/3840x2160/420082.jpg')] bg-cover bg-center relative">
+        <!-- Overlay to darken wallpaper -->
+        <div class="absolute inset-0 bg-slate-900/80 z-0"></div>
+
+        <div class="relative z-10 flex flex-col h-full">
+            <!-- HEADER -->
+            <header class="h-20 flex items-center justify-between px-8 border-b border-slate-700/50 glass-card rounded-none">
+                <h1 class="text-2xl font-bold text-white tracking-wide">Dashboard <span class="text-cyan-400 font-light">Overview</span></h1>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-slate-400" id="adminEmailDisplay">loading admin...</span>
+                    <div class="w-10 h-10 rounded-full bg-slate-800 border-2 border-cyan-500 flex items-center justify-center shadow-[0_0_8px_rgba(0,255,255,0.5)]">
+                        <span class="text-cyan-400 font-bold">A</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- SCROLLABLE DASHBOARD CONTENT -->
+            <div class="flex-1 overflow-y-auto p-8">
                 
-                <!-- Admin Profile & Logout -->
-                <div class="flex items-center space-x-3 border-l border-slate-700 pl-6">
-                    <div class="text-right hidden md:block">
-                        <p class="text-sm font-bold text-white">System Admin</p>
-                        <p id="adminEmailTxt" class="text-xs text-slate-400">Loading...</p>
+                <!-- TOP STATS ROW -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="glass-card rounded-xl p-6 border-l-4 border-l-cyan-400 relative overflow-hidden">
+                        <p class="text-sm text-cyan-200 font-mono mb-1 uppercase">Total Active Students</p>
+                        <h3 class="text-4xl font-bold text-white mt-2" id="statTotalStudents">--</h3>
+                        <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">👥</div>
                     </div>
-                    <button id="logoutBtn" class="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/50 px-4 py-2 rounded-lg text-sm font-bold tracking-wider transition-all duration-300">
-                        LOGOUT
-                    </button>
+                    
+                    <div class="glass-card rounded-xl p-6 border-l-4 border-l-amber-400 relative overflow-hidden">
+                        <p class="text-sm text-amber-200 font-mono mb-1 uppercase">Present Today</p>
+                        <h3 class="text-4xl font-bold text-white mt-2" id="statPresentToday">--</h3>
+                        <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">📅</div>
+                    </div>
+                    
+                    <div class="glass-card rounded-xl p-6 border-l-4 border-l-red-500 relative overflow-hidden">
+                        <p class="text-sm text-red-200 font-mono mb-1 uppercase">Pending Fees (Users)</p>
+                        <h3 class="text-4xl font-bold text-white mt-2" id="statPendingFees">--</h3>
+                        <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">💳</div>
+                    </div>
+                    
+                    <div class="glass-card rounded-xl p-6 border-l-4 border-l-emerald-400 relative overflow-hidden">
+                        <p class="text-sm text-emerald-200 font-mono mb-1 uppercase">Available Seats</p>
+                        <h3 class="text-4xl font-bold text-white mt-2" id="statAvailableSeats">--</h3>
+                        <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">🪑</div>
+                    </div>
+                </div>
+
+                <!-- MAIN WORKSPACE AREA -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- LEFT COLUMN (Student Approvals & Recent) -->
+                    <div class="lg:col-span-2 glass-card rounded-xl p-6">
+                        <div class="flex justify-between items-center mb-6 border-b border-slate-700/50 pb-4">
+                            <h2 class="text-xl font-bold text-white flex items-center"><span class="mr-2">⚡</span> Action Required & Recent</h2>
+                            <button class="text-cyan-400 text-sm hover:text-cyan-300 font-bold tracking-wider">VIEW ALL</button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-slate-300">
+                                <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-tl-lg">Student Profile</th>
+                                        <th class="px-4 py-3">Fee Status</th>
+                                        <th class="px-4 py-3">Valid Till</th>
+                                        <th class="px-4 py-3 rounded-tr-lg">Account Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentActivityTable">
+                                    <!-- Injected by JS -->
+                                    <tr><td colspan="4" class="text-center py-6 text-slate-400">Fetching database...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN (Quick Actions) -->
+                    <div class="glass-card rounded-xl p-6">
+                        <h2 class="text-xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Quick Actions</h2>
+                        
+                        <div class="space-y-4">
+                            <button class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center shadow-[0_0_15px_rgba(8,145,178,0.4)]">
+                                <span class="text-lg mr-2">📝</span> Add Manual Entry
+                            </button>
+                            
+                            <button class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
+                                <span class="text-lg mr-2">🔲</span> Generate Today's QR
+                            </button>
+
+                            <button class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
+                                <span class="text-lg mr-2">📢</span> Send Notice
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-        </header>
+        </div>
+    </main>
 
-        <!-- DASHBOARD SCROLLABLE AREA -->
-        <main class="flex-1 overflow-y-auto p-8">
-            
-            <!-- STATS GRID -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- Card 1 -->
-                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 transition-all duration-300 card-hover relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150"></div>
-                    <div class="flex justify-between items-start relative z-10">
-                        <div>
-                            <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-1">Total Students</p>
-                            <h3 class="text-3xl font-bold text-white">124</h3>
-                        </div>
-                        <div class="p-2 bg-blue-500/20 rounded-lg text-blue-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        </div>
-                    </div>
-                </div>
+    <!-- Base Auth JS (Redirect if not logged in) -->
+    <script type="module">
+        import { auth } from './js/firebase-config.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-                <!-- Card 2 -->
-                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 transition-all duration-300 card-hover relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150"></div>
-                    <div class="flex justify-between items-start relative z-10">
-                        <div>
-                            <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-1">Present Today</p>
-                            <h3 class="text-3xl font-bold text-emerald-400 neon-text">86</h3>
-                        </div>
-                        <div class="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                    </div>
-                </div>
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('adminEmailDisplay').innerText = user.email;
+            } else {
+                window.location.href = "index.html";
+            }
+        });
 
-                <!-- Card 3 -->
-                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 transition-all duration-300 card-hover relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-16 h-16 bg-amber-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150"></div>
-                    <div class="flex justify-between items-start relative z-10">
-                        <div>
-                            <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-1">Available Seats</p>
-                            <h3 class="text-3xl font-bold text-amber-400">14</h3>
-                        </div>
-                        <div class="p-2 bg-amber-500/20 rounded-lg text-amber-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 4 -->
-                <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 transition-all duration-300 card-hover relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-16 h-16 bg-red-500/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-150"></div>
-                    <div class="flex justify-between items-start relative z-10">
-                        <div>
-                            <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-1">Pending Fees</p>
-                            <h3 class="text-3xl font-bold text-red-400">12</h3>
-                        </div>
-                        <div class="p-2 bg-red-500/20 rounded-lg text-red-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- RECENT ACTIVITY (Placeholder for upcoming modules) -->
-            <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-                <h3 class="text-lg font-bold text-white mb-4 flex items-center">
-                    <svg class="w-5 h-5 text-cyan-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    System Activity Stream
-                </h3>
-                <div class="space-y-4">
-                    <div class="flex items-center p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                        <div class="w-2 h-2 bg-emerald-500 rounded-full mr-4"></div>
-                        <p class="text-sm text-slate-300 flex-1">Student <span class="font-bold text-white">Rahul Sharma</span> marked attendance via QR.</p>
-                        <span class="text-xs text-slate-500 font-mono">10 mins ago</span>
-                    </div>
-                    <div class="flex items-center p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                        <div class="w-2 h-2 bg-amber-500 rounded-full mr-4 animate-pulse"></div>
-                        <p class="text-sm text-slate-300 flex-1">New registration pending approval: <span class="font-bold text-white">Priya Verma</span>.</p>
-                        <span class="text-xs text-slate-500 font-mono">1 hr ago</span>
-                    </div>
-                </div>
-            </div>
-
-        </main>
-    </div>
-
-    <!-- Dashboard Security Logic -->
-    <script type="module" src="./js/dashboard.js"></script>
-    <script>
-        // Set real-time date
-        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = "index.html";
+            });
+        });
     </script>
+    
+    <!-- Realtime Database Logic -->
+    <script type="module" src="./js/dashboard.js"></script>
 </body>
 </html>

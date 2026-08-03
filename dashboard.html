@@ -6,212 +6,241 @@
     <title>Admin Dashboard - Library System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Premium Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* Neon Hover Effects for Sidebar */
-        .nav-item { transition: all 0.3s ease; border-left: 3px solid transparent; }
+        .nav-item { transition: all 0.3s ease; border-left: 3px solid transparent; cursor: pointer; }
         .nav-item:hover, .nav-item.active { 
-            background: rgba(0, 255, 255, 0.1); 
-            border-left: 3px solid #00ffff;
-            color: #00ffff;
+            background: rgba(0, 255, 255, 0.1); border-left: 3px solid #00ffff; color: #00ffff;
             box-shadow: inset 10px 0 15px -10px rgba(0, 255, 255, 0.3);
         }
 
-        /* Glassmorphism Cards */
         .glass-card {
-            background: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
-        .glass-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 255, 255, 0.1);
-        }
+        
+        /* Smooth Fade In Animation for Views */
+        .view-section { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-200 h-screen flex overflow-hidden font-sans">
 
-    <!-- SIDEBAR (Admin Rights & Navigation) -->
+    <!-- SIDEBAR -->
     <aside class="w-72 bg-slate-800 flex flex-col justify-between border-r border-slate-700 hidden md:flex z-20">
         <div>
             <!-- Admin Logo -->
             <div class="h-20 flex items-center justify-center border-b border-slate-700 bg-slate-900/50">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-full border border-amber-500 shadow-[0_0_10px_rgba(249,115,22,0.5)] flex items-center justify-center bg-black">
+                    <div class="w-10 h-10 rounded-full border border-amber-500 flex items-center justify-center bg-black shadow-[0_0_10px_rgba(249,115,22,0.5)]">
                         <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
                     <span class="text-xl font-bold tracking-widest text-white">ADMIN<span class="text-cyan-400">PRO</span></span>
                 </div>
             </div>
 
-            <!-- Navigation Links -->
-            <nav class="mt-4 flex flex-col space-y-1">
-                <a href="#" class="nav-item active flex items-center px-6 py-3 text-cyan-400 bg-slate-800/50">
+            <!-- SPA Navigation Links with IDs -->
+            <nav class="mt-4 flex flex-col space-y-1 overflow-y-auto max-h-[calc(100vh-160px)]">
+                <a id="nav-dashboard" class="nav-item active flex items-center px-6 py-3 text-cyan-400 bg-slate-800/50">
                     <span class="text-xl mr-3">📊</span> Dashboard Overview
                 </a>
                 
                 <div class="px-6 py-2 mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Student Management</div>
-                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                <a id="nav-approvals" class="nav-item flex items-center px-6 py-3 text-slate-300">
                     <span class="text-xl mr-3">✅</span> Pending Approvals
                 </a>
-                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                <a id="nav-manual-entry" class="nav-item flex items-center px-6 py-3 text-slate-300">
                     <span class="text-xl mr-3">📝</span> Add Manual Entry
                 </a>
-                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                <a id="nav-all-students" class="nav-item flex items-center px-6 py-3 text-slate-300">
                     <span class="text-xl mr-3">👥</span> All Students Data
                 </a>
 
                 <div class="px-6 py-2 mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Library Operations</div>
-                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                <a id="nav-seats" class="nav-item flex items-center px-6 py-3 text-slate-300">
                     <span class="text-xl mr-3">🪑</span> Seat Management
                 </a>
-                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                <a id="nav-fees" class="nav-item flex items-center px-6 py-3 text-slate-300">
                     <span class="text-xl mr-3">💳</span> Fees & Approvals
                 </a>
-                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                <a id="nav-qr" class="nav-item flex items-center px-6 py-3 text-slate-300">
                     <span class="text-xl mr-3">📱</span> QR & Attendance
                 </a>
-                <a href="#" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                <a id="nav-notices" class="nav-item flex items-center px-6 py-3 text-slate-300">
                     <span class="text-xl mr-3">🔔</span> Send Notifications
                 </a>
             </nav>
         </div>
 
-        <!-- Logout Button -->
         <div class="p-4 border-t border-slate-700 bg-slate-900/30">
-            <button id="logoutBtn" class="w-full flex items-center justify-center px-4 py-2 text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors border border-transparent hover:border-red-500/30">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                Secure Logout
+            <button id="logoutBtn" class="w-full flex items-center justify-center px-4 py-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors border border-transparent hover:border-red-500/30">
+                <span class="text-lg mr-2">🚪</span> Secure Logout
             </button>
         </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
+    <!-- MAIN CONTENT -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[url('https://backiee.com/static/wallpapers/3840x2160/420082.jpg')] bg-cover bg-center relative">
-        <!-- Overlay to darken wallpaper -->
         <div class="absolute inset-0 bg-slate-900/80 z-0"></div>
 
         <div class="relative z-10 flex flex-col h-full">
-            <!-- HEADER -->
             <header class="h-20 flex items-center justify-between px-8 border-b border-slate-700/50 glass-card rounded-none">
-                <h1 class="text-2xl font-bold text-white tracking-wide">Dashboard <span class="text-cyan-400 font-light">Overview</span></h1>
+                <h1 id="headerTitle" class="text-2xl font-bold text-white tracking-wide">Dashboard <span class="text-cyan-400 font-light">Overview</span></h1>
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm text-slate-400" id="adminEmailDisplay">loading admin...</span>
-                    <div class="w-10 h-10 rounded-full bg-slate-800 border-2 border-cyan-500 flex items-center justify-center shadow-[0_0_8px_rgba(0,255,255,0.5)]">
+                    <span class="text-sm text-slate-400" id="adminEmailDisplay">loading...</span>
+                    <div class="w-10 h-10 rounded-full bg-slate-800 border-2 border-cyan-500 flex items-center justify-center">
                         <span class="text-cyan-400 font-bold">A</span>
                     </div>
                 </div>
             </header>
 
-            <!-- SCROLLABLE DASHBOARD CONTENT -->
-            <div class="flex-1 overflow-y-auto p-8">
+            <!-- 🔴 SPA CONTAINER: All Views go here -->
+            <div class="flex-1 overflow-y-auto p-8 relative">
                 
-                <!-- TOP STATS ROW -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="glass-card rounded-xl p-6 border-l-4 border-l-cyan-400 relative overflow-hidden">
-                        <p class="text-sm text-cyan-200 font-mono mb-1 uppercase">Total Active Students</p>
-                        <h3 class="text-4xl font-bold text-white mt-2" id="statTotalStudents">--</h3>
-                        <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">👥</div>
+                <!-- VIEW 1: DASHBOARD (Default) -->
+                <div id="view-dashboard" class="view-section block">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="glass-card rounded-xl p-6 border-l-4 border-l-cyan-400 relative overflow-hidden">
+                            <p class="text-sm text-cyan-200 font-mono mb-1 uppercase">Total Active</p>
+                            <h3 class="text-4xl font-bold text-white mt-2" id="statTotalStudents">--</h3>
+                            <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">👥</div>
+                        </div>
+                        <div class="glass-card rounded-xl p-6 border-l-4 border-l-amber-400 relative overflow-hidden">
+                            <p class="text-sm text-amber-200 font-mono mb-1 uppercase">Present Today</p>
+                            <h3 class="text-4xl font-bold text-white mt-2" id="statPresentToday">--</h3>
+                            <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">📅</div>
+                        </div>
+                        <div class="glass-card rounded-xl p-6 border-l-4 border-l-red-500 relative overflow-hidden">
+                            <p class="text-sm text-red-200 font-mono mb-1 uppercase">Pending Fees</p>
+                            <h3 class="text-4xl font-bold text-white mt-2" id="statPendingFees">--</h3>
+                            <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">💳</div>
+                        </div>
+                        <div class="glass-card rounded-xl p-6 border-l-4 border-l-emerald-400 relative overflow-hidden">
+                            <p class="text-sm text-emerald-200 font-mono mb-1 uppercase">Available Seats</p>
+                            <h3 class="text-4xl font-bold text-white mt-2 flex items-baseline">
+                                <span id="statAvailableSeats">--</span> <span class="text-lg text-slate-400 ml-2">/ <span id="statTotalCapacity">--</span></span>
+                            </h3>
+                            <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">🪑</div>
+                        </div>
                     </div>
-                    
-                    <div class="glass-card rounded-xl p-6 border-l-4 border-l-amber-400 relative overflow-hidden">
-                        <p class="text-sm text-amber-200 font-mono mb-1 uppercase">Present Today</p>
-                        <h3 class="text-4xl font-bold text-white mt-2" id="statPresentToday">--</h3>
-                        <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">📅</div>
-                    </div>
-                    
-                    <div class="glass-card rounded-xl p-6 border-l-4 border-l-red-500 relative overflow-hidden">
-                        <p class="text-sm text-red-200 font-mono mb-1 uppercase">Pending Fees (Users)</p>
-                        <h3 class="text-4xl font-bold text-white mt-2" id="statPendingFees">--</h3>
-                        <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">💳</div>
-                    </div>
-                    
-                    <div class="glass-card rounded-xl p-6 border-l-4 border-l-emerald-400 relative overflow-hidden">
-                        <p class="text-sm text-emerald-200 font-mono mb-1 uppercase">Available Seats</p>
-                        <h3 class="text-4xl font-bold text-white mt-2" id="statAvailableSeats">--</h3>
-                        <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">🪑</div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 glass-card rounded-xl p-6">
+                            <div class="flex justify-between items-center mb-6 border-b border-slate-700/50 pb-4">
+                                <h2 class="text-xl font-bold text-white flex items-center"><span class="mr-2">⚡</span> Action Required & Recent</h2>
+                                <button id="btnViewAllApprovals" class="text-cyan-400 text-sm hover:text-cyan-300 font-bold tracking-wider">VIEW ALL</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm text-slate-300">
+                                    <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
+                                        <tr>
+                                            <th class="px-4 py-3 rounded-tl-lg">Student Profile</th>
+                                            <th class="px-4 py-3">Fee Status</th>
+                                            <th class="px-4 py-3">Valid Till</th>
+                                            <th class="px-4 py-3 rounded-tr-lg">Account Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recentActivityTable">
+                                        <tr><td colspan="4" class="text-center py-6 text-slate-400">Loading data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="glass-card rounded-xl p-6">
+                            <h2 class="text-xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Quick Actions</h2>
+                            <div class="space-y-4">
+                                <button id="btnQuickAdd" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center">
+                                    <span class="text-lg mr-2">📝</span> Add Manual Entry
+                                </button>
+                                <button id="btnQuickQR" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center">
+                                    <span class="text-lg mr-2">🔲</span> Generate Today's QR
+                                </button>
+                                <button id="btnQuickNotice" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center">
+                                    <span class="text-lg mr-2">📢</span> Send Notice
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- MAIN WORKSPACE AREA -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    
-                    <!-- LEFT COLUMN (Student Approvals & Recent) -->
-                    <div class="lg:col-span-2 glass-card rounded-xl p-6">
-                        <div class="flex justify-between items-center mb-6 border-b border-slate-700/50 pb-4">
-                            <h2 class="text-xl font-bold text-white flex items-center"><span class="mr-2">⚡</span> Action Required & Recent</h2>
-                            <button class="text-cyan-400 text-sm hover:text-cyan-300 font-bold tracking-wider">VIEW ALL</button>
-                        </div>
-                        
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-sm text-slate-300">
-                                <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
-                                    <tr>
-                                        <th class="px-4 py-3 rounded-tl-lg">Student Profile</th>
-                                        <th class="px-4 py-3">Fee Status</th>
-                                        <th class="px-4 py-3">Valid Till</th>
-                                        <th class="px-4 py-3 rounded-tr-lg">Account Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="recentActivityTable">
-                                    <!-- Injected by JS -->
-                                    <tr><td colspan="4" class="text-center py-6 text-slate-400">Fetching database...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- RIGHT COLUMN (Quick Actions) -->
-                    <div class="glass-card rounded-xl p-6">
-                        <h2 class="text-xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Quick Actions</h2>
-                        
-                        <div class="space-y-4">
-                            <button class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center shadow-[0_0_15px_rgba(8,145,178,0.4)]">
-                                <span class="text-lg mr-2">📝</span> Add Manual Entry
-                            </button>
-                            
-                            <button class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
-                                <span class="text-lg mr-2">🔲</span> Generate Today's QR
-                            </button>
-
-                            <button class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
-                                <span class="text-lg mr-2">📢</span> Send Notice
-                            </button>
-                        </div>
-                    </div>
-
+                <!-- VIEW 2: DUMMY SECTION FOR FUTURE MODULES -->
+                <div id="view-placeholder" class="view-section hidden glass-card rounded-xl p-10 text-center">
+                    <span class="text-6xl mb-4 block">🚧</span>
+                    <h2 class="text-3xl font-bold text-white mb-2" id="placeholderTitle">Section Under Construction</h2>
+                    <p class="text-slate-400">Yeh feature abhi hum JS me zinda karenge!</p>
                 </div>
+
             </div>
         </div>
     </main>
 
-    <!-- Base Auth JS (Redirect if not logged in) -->
+    <!-- SPA Router Logic (Handles navigation clicks) -->
+    <script>
+        const views = {
+            'nav-dashboard': { id: 'view-dashboard', title: 'Dashboard <span class="text-cyan-400 font-light">Overview</span>' },
+            'nav-approvals': { id: 'view-placeholder', title: 'Pending <span class="text-amber-400 font-light">Approvals</span>', name: "Pending Approvals Module" },
+            'nav-manual-entry': { id: 'view-placeholder', title: 'Manual <span class="text-cyan-400 font-light">Entry</span>', name: "Student Manual Entry Form" },
+            'nav-all-students': { id: 'view-placeholder', title: 'All <span class="text-cyan-400 font-light">Students</span>', name: "Students Directory" },
+            'nav-seats': { id: 'view-placeholder', title: 'Seat <span class="text-cyan-400 font-light">Matrix</span>', name: "Visual Seat Layout" },
+            'nav-fees': { id: 'view-placeholder', title: 'Fees <span class="text-cyan-400 font-light">Management</span>', name: "Fees & Payment Engine" },
+            'nav-qr': { id: 'view-placeholder', title: 'QR <span class="text-cyan-400 font-light">Manager</span>', name: "QR Generator" },
+            'nav-notices': { id: 'view-placeholder', title: 'Push <span class="text-cyan-400 font-light">Notices</span>', name: "Notification System" }
+        };
+
+        function switchView(navId) {
+            // Update Active Class
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active', 'text-cyan-400', 'bg-slate-800/50');
+                el.classList.add('text-slate-300');
+            });
+            const activeNav = document.getElementById(navId);
+            if(activeNav) {
+                activeNav.classList.add('active', 'text-cyan-400', 'bg-slate-800/50');
+                activeNav.classList.remove('text-slate-300');
+            }
+
+            // Hide all views, show target view
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            
+            const target = views[navId];
+            document.getElementById('headerTitle').innerHTML = target.title;
+            
+            const viewElement = document.getElementById(target.id);
+            viewElement.classList.remove('hidden');
+            
+            if(target.id === 'view-placeholder') {
+                document.getElementById('placeholderTitle').innerText = target.name + " Coming Soon";
+            }
+        }
+
+        // Add Event Listeners to Nav & Quick Actions
+        Object.keys(views).forEach(navId => {
+            document.getElementById(navId)?.addEventListener('click', () => switchView(navId));
+        });
+
+        // Map Quick buttons to views
+        document.getElementById('btnViewAllApprovals')?.addEventListener('click', () => switchView('nav-approvals'));
+        document.getElementById('btnQuickAdd')?.addEventListener('click', () => switchView('nav-manual-entry'));
+        document.getElementById('btnQuickQR')?.addEventListener('click', () => switchView('nav-qr'));
+        document.getElementById('btnQuickNotice')?.addEventListener('click', () => switchView('nav-notices'));
+    </script>
+
+    <!-- Auth Protection -->
     <script type="module">
         import { auth } from './js/firebase-config.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('adminEmailDisplay').innerText = user.email;
-            } else {
-                window.location.href = "index.html";
-            }
+            if (user) document.getElementById('adminEmailDisplay').innerText = user.email;
+            else window.location.href = "index.html";
         });
-
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.href = "index.html";
-            });
-        });
+        document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
     </script>
     
-    <!-- Realtime Database Logic -->
+    <!-- Realtime Database Logistics -->
     <script type="module" src="./js/dashboard.js"></script>
 </body>
 </html>

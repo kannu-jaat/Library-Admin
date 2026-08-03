@@ -7,48 +7,126 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom Loader */
+        /* 1. Breathing Background Animation */
+        @keyframes breathe {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .bg-breathing {
+            position: fixed;
+            top: 0; left: 0; 
+            width: 100vw; height: 100vh;
+            background: url('https://backiee.com/static/wallpapers/3840x2160/420082.jpg') no-repeat center center;
+            background-size: cover;
+            animation: breathe 15s infinite ease-in-out; /* Smooth zoom in/out */
+            z-index: -1;
+            filter: brightness(0.4); /* Thoda dark kiya hai taaki neon lights chamken */
+        }
+
+        /* 2. Down to Up Slide Animation */
+        @keyframes slideUp {
+            0% { transform: translateY(60px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* 3. Neon Card & Logo Glow */
+        .neon-card {
+            background: rgba(15, 23, 42, 0.65); /* Transparent dark background */
+            backdrop-filter: blur(12px); /* Glassmorphism effect */
+            border: 1px solid rgba(0, 255, 255, 0.7); /* Cyan border */
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.4), 
+                        0 0 30px rgba(0, 255, 255, 0.2),
+                        inset 0 0 15px rgba(0, 255, 255, 0.1);
+        }
+        .neon-logo {
+            border: 2px solid #f97316; /* Amber border */
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.8), 
+                        0 0 30px rgba(249, 115, 22, 0.5);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* 4. RGB Neon Focus for Input Fields */
+        .neon-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        /* RGB Animation Keyframes */
+        @keyframes rgbGlow {
+            0%   { border-color: #ff0040; box-shadow: 0 0 15px #ff0040; }
+            33%  { border-color: #00ff40; box-shadow: 0 0 15px #00ff40; }
+            66%  { border-color: #0040ff; box-shadow: 0 0 15px #0040ff; }
+            100% { border-color: #ff0040; box-shadow: 0 0 15px #ff0040; }
+        }
+        .neon-input:focus {
+            outline: none;
+            animation: rgbGlow 2.5s linear infinite; /* RGB continuous rotation */
+        }
+        /* Autofill color fix for dark inputs */
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 30px #0f172a inset !important;
+            -webkit-text-fill-color: white !important;
+        }
+
+        /* Button Glow Hover */
+        .neon-btn:hover {
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Loader */
         .loader { border-top-color: #F59E0B; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-slate-50 flex items-center justify-center min-h-screen">
+<body class="flex items-center justify-center min-h-screen overflow-hidden">
 
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 m-4">
+    <!-- Breathing Wallpaper Layer -->
+    <div class="bg-breathing"></div>
+
+    <!-- Main Login Card (with Down-to-Up Animation) -->
+    <div class="w-full max-w-md rounded-2xl p-8 m-4 neon-card animate-slide-up relative z-10">
+        
         <!-- Logo / Header -->
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 mb-4">
-                <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            <div class="neon-logo inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 transition-transform hover:scale-110 duration-300">
+                <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
             </div>
-            <h2 class="text-2xl font-bold text-slate-800">Admin Portal</h2>
-            <p class="text-sm text-slate-500 mt-1">Sign in to manage your library</p>
+            <h2 class="text-2xl font-bold text-white tracking-wider">SYSTEM ADMIN</h2>
+            <p class="text-sm text-cyan-200 mt-1 font-mono">Secure Access Portal</p>
         </div>
 
         <!-- Login Form -->
         <form id="loginForm" class="space-y-6">
-            <!-- Error Message Box (Hidden by default) -->
-            <div id="errorMsg" class="hidden bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-200 text-center">
+            <!-- Error Message Box -->
+            <div id="errorMsg" class="hidden bg-red-900/50 text-red-300 text-sm p-3 rounded-lg border border-red-500 text-center shadow-[0_0_10px_rgba(255,0,0,0.4)]">
                 Invalid credentials.
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+                <label class="block text-xs font-mono text-cyan-300 mb-2 uppercase tracking-widest">Email Address</label>
                 <input type="email" id="email" required 
-                    class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                    class="neon-input w-full px-4 py-3 rounded-lg"
                     placeholder="admin@library.com">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                <label class="block text-xs font-mono text-cyan-300 mb-2 uppercase tracking-widest">Password</label>
                 <input type="password" id="password" required 
-                    class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                    class="neon-input w-full px-4 py-3 rounded-lg"
                     placeholder="••••••••">
             </div>
 
             <button type="submit" id="loginBtn" 
-                class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex justify-center items-center">
-                <span id="btnText">Sign In</span>
-                <div id="btnLoader" class="loader ease-linear rounded-full border-2 border-t-2 border-gray-200 h-5 w-5 ml-2 hidden"></div>
+                class="neon-btn w-full bg-white text-black font-bold py-3 px-4 rounded-lg transition-all duration-300 flex justify-center items-center mt-4">
+                <span id="btnText" class="tracking-wider uppercase">Initialize Login</span>
+                <div id="btnLoader" class="loader ease-linear rounded-full border-2 border-t-2 border-slate-800 h-5 w-5 ml-2 hidden"></div>
             </button>
         </form>
     </div>

@@ -1,1 +1,49 @@
-//auto generate
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+    <div class="max-w-4xl mx-auto p-6">
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h1 class="text-3xl font-bold text-green-600">
+                ✅ Login Successful
+            </h1>
+
+            <p class="mt-4 text-slate-600">
+                Dashboard page loaded successfully.
+            </p>
+
+            <div class="mt-6 p-4 bg-slate-100 rounded-lg">
+                <p><strong>Current Time:</strong></p>
+                <p id="time"></p>
+            </div>
+
+            <button id="logoutBtn"
+                class="mt-6 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth } from './js/firebase-config.js';
+        import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        document.getElementById("time").textContent =
+            new Date().toLocaleString();
+
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+            await signOut(auth);
+            window.location.href = "index.html";
+        });
+
+        console.log("Dashboard Loaded");
+    </script>
+
+</body>
+</html>

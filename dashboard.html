@@ -6,7 +6,7 @@
     <title>Admin Dashboard - Library System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
@@ -26,19 +26,25 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-200 h-screen flex overflow-hidden font-sans">
+<body class="bg-slate-900 text-slate-200 h-screen flex overflow-hidden font-sans relative">
 
-    <!-- SIDEBAR -->
-    <aside class="w-72 bg-slate-800 flex flex-col justify-between border-r border-slate-700 hidden md:flex z-20">
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/80 z-30 hidden backdrop-blur-sm md:hidden transition-opacity"></div>
+
+    <!-- SIDEBAR (Mobile Slide-in & Desktop Fixed) -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-slate-800 flex flex-col justify-between border-r border-slate-700 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none">
         <div>
-            <!-- Admin Logo -->
-            <div class="h-20 flex items-center justify-center border-b border-slate-700 bg-slate-900/50">
+            <!-- Admin Logo & Mobile Close Btn -->
+            <div class="h-20 flex items-center justify-between md:justify-center px-6 md:px-0 border-b border-slate-700 bg-slate-900/50">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-full border border-amber-500 flex items-center justify-center bg-black shadow-[0_0_10px_rgba(249,115,22,0.5)]">
                         <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                     </div>
                     <span class="text-xl font-bold tracking-widest text-white">ADMIN<span class="text-cyan-400">PRO</span></span>
                 </div>
+                <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
 
             <!-- Navigation Links -->
@@ -82,64 +88,70 @@
     </aside>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[url('https://backiee.com/static/wallpapers/3840x2160/420082.jpg')] bg-cover bg-center relative">
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[url('https://backiee.com/static/wallpapers/3840x2160/420082.jpg')] bg-cover bg-center relative w-full">
         <div class="absolute inset-0 bg-slate-900/80 z-0"></div>
 
-        <div class="relative z-10 flex flex-col h-full">
-            <header class="h-20 flex items-center justify-between px-8 border-b border-slate-700/50 glass-card rounded-none">
-                <h1 id="headerTitle" class="text-2xl font-bold text-white tracking-wide">Dashboard <span class="text-cyan-400 font-light">Overview</span></h1>
+        <div class="relative z-10 flex flex-col h-full w-full">
+            <!-- Header with Hamburger Menu for Mobile -->
+            <header class="h-20 flex items-center justify-between px-4 md:px-8 border-b border-slate-700/50 glass-card rounded-none">
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm text-slate-400" id="adminEmailDisplay">loading...</span>
-                    <div class="w-10 h-10 rounded-full bg-slate-800 border-2 border-cyan-500 flex items-center justify-center">
-                        <span class="text-cyan-400 font-bold">A</span>
+                    <button id="mobileMenuBtn" class="md:hidden text-slate-300 hover:text-cyan-400 transition-colors">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <h1 id="headerTitle" class="text-lg md:text-2xl font-bold text-white tracking-wide truncate">Dashboard <span class="text-cyan-400 font-light">Overview</span></h1>
+                </div>
+                <div class="flex items-center space-x-3 md:space-x-4">
+                    <span class="text-xs md:text-sm text-slate-400 hidden sm:block" id="adminEmailDisplay">loading...</span>
+                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-800 border-2 border-cyan-500 flex items-center justify-center flex-shrink-0">
+                        <span class="text-cyan-400 font-bold text-sm md:text-base">A</span>
                     </div>
                 </div>
             </header>
 
             <!-- SPA CONTAINER -->
-            <div class="flex-1 overflow-y-auto p-8 relative">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 relative w-full">
                 
                 <!-- VIEW 1: DASHBOARD -->
-                <div id="view-dashboard" class="view-section block">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div class="glass-card rounded-xl p-6 border-l-4 border-l-cyan-400 relative overflow-hidden">
-                            <p class="text-sm text-cyan-200 font-mono mb-1 uppercase">Total Active</p>
-                            <h3 class="text-4xl font-bold text-white mt-2" id="statTotalStudents">--</h3>
-                            <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">👥</div>
+                <div id="view-dashboard" class="view-section block w-full">
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
+                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-cyan-400 relative overflow-hidden">
+                            <p class="text-xs md:text-sm text-cyan-200 font-mono mb-1 uppercase">Total Active</p>
+                            <h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2" id="statTotalStudents">--</h3>
+                            <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl md:text-7xl">👥</div>
                         </div>
-                        <div class="glass-card rounded-xl p-6 border-l-4 border-l-amber-400 relative overflow-hidden">
-                            <p class="text-sm text-amber-200 font-mono mb-1 uppercase">Present Today</p>
-                            <h3 class="text-4xl font-bold text-white mt-2" id="statPresentToday">--</h3>
-                            <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">📅</div>
+                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-amber-400 relative overflow-hidden">
+                            <p class="text-xs md:text-sm text-amber-200 font-mono mb-1 uppercase">Present Today</p>
+                            <h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2" id="statPresentToday">--</h3>
+                            <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl md:text-7xl">📅</div>
                         </div>
-                        <div class="glass-card rounded-xl p-6 border-l-4 border-l-red-500 relative overflow-hidden">
-                            <p class="text-sm text-red-200 font-mono mb-1 uppercase">Pending Fees</p>
-                            <h3 class="text-4xl font-bold text-white mt-2" id="statPendingFees">--</h3>
-                            <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">💳</div>
+                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-red-500 relative overflow-hidden">
+                            <p class="text-xs md:text-sm text-red-200 font-mono mb-1 uppercase">Pending Fees</p>
+                            <h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2" id="statPendingFees">--</h3>
+                            <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl md:text-7xl">💳</div>
                         </div>
-                        <div class="glass-card rounded-xl p-6 border-l-4 border-l-emerald-400 relative overflow-hidden">
-                            <p class="text-sm text-emerald-200 font-mono mb-1 uppercase">Available Seats</p>
-                            <h3 class="text-4xl font-bold text-white mt-2 flex items-baseline">
-                                <span id="statAvailableSeats">--</span> <span class="text-lg text-slate-400 ml-2">/ <span id="statTotalCapacity">--</span></span>
+                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-emerald-400 relative overflow-hidden">
+                            <p class="text-xs md:text-sm text-emerald-200 font-mono mb-1 uppercase">Available Seats</p>
+                            <h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2 flex items-baseline">
+                                <span id="statAvailableSeats">--</span> <span class="text-xs md:text-lg text-slate-400 ml-1 md:ml-2">/ <span id="statTotalCapacity">--</span></span>
                             </h3>
-                            <div class="absolute -right-4 -bottom-4 opacity-10 text-7xl">🪑</div>
+                            <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl md:text-7xl">🪑</div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2 glass-card rounded-xl p-6">
-                            <div class="flex justify-between items-center mb-6 border-b border-slate-700/50 pb-4">
-                                <h2 class="text-xl font-bold text-white flex items-center"><span class="mr-2">⚡</span> Action Required & Recent</h2>
-                                <button id="btnViewAllApprovals" class="text-cyan-400 text-sm hover:text-cyan-300 font-bold tracking-wider">VIEW ALL</button>
+                        <div class="lg:col-span-2 glass-card rounded-xl p-4 md:p-6 w-full overflow-hidden">
+                            <div class="flex justify-between items-center mb-4 md:mb-6 border-b border-slate-700/50 pb-4">
+                                <h2 class="text-lg md:text-xl font-bold text-white flex items-center"><span class="mr-2">⚡</span> Recent Students</h2>
+                                <button id="btnViewAllStudents" class="text-cyan-400 text-xs md:text-sm hover:text-cyan-300 font-bold tracking-wider">VIEW ALL</button>
                             </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-sm text-slate-300">
+                            <div class="overflow-x-auto w-full">
+                                <table class="w-full text-left text-sm text-slate-300 whitespace-nowrap">
                                     <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
                                         <tr>
                                             <th class="px-4 py-3 rounded-tl-lg">Student Profile</th>
                                             <th class="px-4 py-3">Fee Status</th>
                                             <th class="px-4 py-3">Valid Till</th>
-                                            <th class="px-4 py-3 rounded-tr-lg">Account Status</th>
+                                            <th class="px-4 py-3 rounded-tr-lg">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody id="recentActivityTable">
@@ -149,16 +161,16 @@
                             </div>
                         </div>
 
-                        <div class="glass-card rounded-xl p-6">
-                            <h2 class="text-xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Quick Actions</h2>
-                            <div class="space-y-4">
-                                <button id="btnQuickAdd" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center">
+                        <div class="glass-card rounded-xl p-4 md:p-6 w-full">
+                            <h2 class="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 border-b border-slate-700/50 pb-4">Quick Actions</h2>
+                            <div class="space-y-3 md:space-y-4">
+                                <button id="btnQuickAdd" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base">
                                     <span class="text-lg mr-2">📝</span> Add Manual Entry
                                 </button>
-                                <button id="btnQuickQR" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center">
+                                <button id="btnQuickQR" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base">
                                     <span class="text-lg mr-2">🔲</span> Generate Today's QR
                                 </button>
-                                <button id="btnQuickNotice" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center">
+                                <button id="btnQuickNotice" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base">
                                     <span class="text-lg mr-2">📢</span> Send Notice
                                 </button>
                             </div>
@@ -167,17 +179,17 @@
                 </div>
 
                 <!-- VIEW 2: PENDING APPROVALS -->
-                <div id="view-approvals" class="view-section hidden">
-                    <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Pending <span class="text-amber-400 font-light">Approvals</span></h2>
+                <div id="view-approvals" class="view-section hidden w-full">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Pending <span class="text-amber-400 font-light">Approvals</span></h2>
                     
-                    <div class="glass-card rounded-xl p-6">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-sm text-slate-300">
+                    <div class="glass-card rounded-xl p-4 md:p-6 w-full overflow-hidden">
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left text-sm text-slate-300 whitespace-nowrap">
                                 <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
                                     <tr>
                                         <th class="px-4 py-3 rounded-tl-lg">Student Details</th>
-                                        <th class="px-4 py-3">Contact & Addr.</th>
-                                        <th class="px-4 py-3">Membership Plan</th>
+                                        <th class="px-4 py-3">Contact Info</th>
+                                        <th class="px-4 py-3">Membership</th>
                                         <th class="px-4 py-3 rounded-tr-lg">Action</th>
                                     </tr>
                                 </thead>
@@ -189,146 +201,188 @@
                     </div>
                 </div>
 
-                <!-- VIEW 3: DUMMY SECTION -->
-                <div id="view-placeholder" class="view-section hidden glass-card rounded-xl p-10 text-center">
-                    <span class="text-6xl mb-4 block">🚧</span>
-                    <h2 class="text-3xl font-bold text-white mb-2" id="placeholderTitle">Section Under Construction</h2>
-                    <p class="text-slate-400">Yeh feature abhi hum JS me zinda karenge!</p>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- PENDING APPROVAL MODAL (UPDATED) -->
-<div id="approvalModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-    <div class="glass-card rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto border border-cyan-500/30 shadow-[0_0_30px_rgba(0,255,255,0.15)]">
-        
-        <div class="px-8 py-5 border-b border-slate-700 flex justify-between items-center sticky top-0 bg-slate-800/90 backdrop-blur-md z-10">
-            <h2 class="text-xl font-bold text-white flex items-center"><span class="text-cyan-400 mr-2">⚡</span> Review & Edit Student Data</h2>
-            <button id="closeModalBtn" class="text-slate-400 hover:text-red-400 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-
-        <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <!-- LEFT: Student Provided Data (Blue Borders) -->
-            <div class="space-y-4">
-                <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">Student Provided Details</h3>
-                
-                <input type="hidden" id="modalStudentKey">
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-2 flex items-center space-x-4 mb-2">
-                        <img id="modalPhotoPreview" src="" class="w-16 h-16 rounded-xl border-2 border-blue-500 object-cover shadow-[0_0_10px_rgba(59,130,246,0.3)]">
-                        <div class="flex-1">
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Photo URL</label>
-                            <input type="text" id="editPhotoUrl" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
-                        </div>
-                    </div>
-
-                    <div class="col-span-2">
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Full Name</label>
-                        <input type="text" id="editFullName" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Mobile</label>
-                        <input type="text" id="editMobile" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Password</label>
-                        <input type="text" id="editPassword" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all">
-                    </div>
-
-                    <div class="col-span-2">
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Address</label>
-                        <input type="text" id="editAddress" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Membership</label>
-                        <input type="text" id="editMembership" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all">
+                <!-- VIEW 3: ALL STUDENTS (NEW MODULE) -->
+                <div id="view-all-students" class="view-section hidden w-full">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700/50 pb-4 space-y-4 md:space-y-0">
+                        <h2 class="text-xl md:text-2xl font-bold text-white">All <span class="text-cyan-400 font-light">Students</span></h2>
+                        <input type="text" id="searchAllStudents" placeholder="Search by name or mobile..." class="w-full md:w-64 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 text-sm">
                     </div>
                     
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Registration Time</label>
-                        <input type="text" id="editRegTime" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-4 py-2 text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
-                    </div>
-
-                    <div class="col-span-2">
-                        <label class="block text-xs font-medium text-slate-400 mb-1">ID Proof URL</label>
-                        <div class="flex space-x-2">
-                            <input type="text" id="editIdProofUrl" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
-                            <a id="btnViewId" href="#" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center whitespace-nowrap">View</a>
+                    <div class="glass-card rounded-xl p-4 md:p-6 w-full overflow-hidden">
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left text-sm text-slate-300 whitespace-nowrap">
+                                <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-tl-lg">Student Profile</th>
+                                        <th class="px-4 py-3">Seat No.</th>
+                                        <th class="px-4 py-3">Fee Status</th>
+                                        <th class="px-4 py-3">Valid Till</th>
+                                        <th class="px-4 py-3 rounded-tr-lg">Profile</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allStudentsTable">
+                                    <tr><td colspan="5" class="text-center py-6 text-slate-400">Loading all students...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
+
+                <!-- DUMMY SECTION FOR OTHERS -->
+                <div id="view-placeholder" class="view-section hidden glass-card rounded-xl p-6 md:p-10 text-center w-full">
+                    <span class="text-5xl md:text-6xl mb-4 block">🚧</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-white mb-2" id="placeholderTitle">Section Under Construction</h2>
+                    <p class="text-sm md:text-base text-slate-400">Yeh feature abhi hum JS me zinda karenge!</p>
+                </div>
+
             </div>
+        </div>
 
-            <!-- RIGHT: Admin Allotment (Default Gray/Cyan Borders) -->
-            <div class="space-y-4">
-                <h3 class="text-sm font-bold text-cyan-500 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">Admin Allotment & Settings</h3>
+        <!-- 🚀 REUSABLE PROFILE / APPROVAL MODAL -->
+        <!-- Works for both Pending Approvals & Editing Active Students -->
+        <div id="profileModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm transition-opacity">
+            <div class="glass-card rounded-xl md:rounded-2xl w-full max-w-5xl max-h-[95vh] overflow-y-auto border border-cyan-500/30 shadow-[0_0_30px_rgba(0,255,255,0.15)]">
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Account Status</label>
-                        <select id="adminAccountStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all appearance-none">
-                            <option value="Approved">Approved</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Rejected">Rejected</option>
-                        </select>
+                <div class="px-4 py-4 md:px-8 md:py-5 border-b border-slate-700 flex justify-between items-center sticky top-0 bg-slate-800/90 backdrop-blur-md z-10">
+                    <h2 class="text-lg md:text-xl font-bold text-white flex items-center"><span class="text-cyan-400 mr-2" id="modalIcon">⚡</span> <span id="modalMainTitle">Review Student Data</span></h2>
+                    <button id="closeProfileModalBtn" class="text-slate-400 hover:text-red-400 transition-colors">
+                        <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <div class="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
+                    <!-- LEFT: Personal Details (Blue Borders) -->
+                    <div class="space-y-4">
+                        <h3 class="text-xs md:text-sm font-bold text-blue-400 uppercase tracking-wider mb-2 md:mb-4 border-b border-slate-700 pb-2">Student Provided Details</h3>
+                        <input type="hidden" id="modalStudentKey">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="col-span-1 sm:col-span-2 flex items-center space-x-4 mb-2">
+                                <img id="modalPhotoPreview" src="" class="w-14 h-14 md:w-16 md:h-16 rounded-xl border-2 border-blue-500 object-cover shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Photo URL</label>
+                                    <input type="text" id="editPhotoUrl" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-xs md:text-sm">
+                                </div>
+                            </div>
+
+                            <div class="col-span-1 sm:col-span-2">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Full Name</label>
+                                <input type="text" id="editFullName" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Mobile</label>
+                                <input type="text" id="editMobile" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Password</label>
+                                <input type="text" id="editPassword" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+                            </div>
+
+                            <div class="col-span-1 sm:col-span-2">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Address</label>
+                                <input type="text" id="editAddress" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Membership Plan</label>
+                                <input type="text" id="editMembership" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Registration Time</label>
+                                <input type="text" id="editRegTime" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-xs" readonly>
+                            </div>
+
+                            <div class="col-span-1 sm:col-span-2">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">ID Proof URL</label>
+                                <div class="flex space-x-2">
+                                    <input type="text" id="editIdProofUrl" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-xs">
+                                    <a id="btnViewId" href="#" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-center whitespace-nowrap">View</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Allot Seat Number</label>
-                        <input type="text" id="adminSeatNumber" placeholder="e.g., K03" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
-                    </div>
+                    <!-- RIGHT: Admin Allotment -->
+                    <div class="space-y-4 mt-4 lg:mt-0">
+                        <h3 class="text-xs md:text-sm font-bold text-cyan-500 uppercase tracking-wider mb-2 md:mb-4 border-b border-slate-700 pb-2">Admin Library Settings</h3>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Account Status</label>
+                                <select id="adminAccountStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all appearance-none text-sm">
+                                    <option value="Approved">Approved</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                            </div>
 
-                    <div class="col-span-2">
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Valid Till</label>
-                        <input type="text" id="adminValidTill" placeholder="e.g., 30 August 2026" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
-                    </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Allot Seat Number</label>
+                                <input type="text" id="adminSeatNumber" placeholder="e.g., K03" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm">
+                            </div>
 
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status</label>
-                        <select id="adminFeeStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all appearance-none">
-                            <option value="Paid">Paid</option>
-                            <option value="Unpaid">Unpaid</option>
-                        </select>
-                    </div>
+                            <div class="col-span-1 sm:col-span-2">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Valid Till Date</label>
+                                <input type="text" id="adminValidTill" placeholder="e.g., 30 August 2026" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm">
+                            </div>
 
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Due Amount (₹)</label>
-                        <input type="number" id="adminDueAmount" value="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
-                    </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status</label>
+                                <select id="adminFeeStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all appearance-none text-sm">
+                                    <option value="Paid">Paid</option>
+                                    <option value="Unpaid">Unpaid</option>
+                                </select>
+                            </div>
 
-                    <div class="col-span-2">
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month</label>
-                        <input type="text" id="adminLastPaid" placeholder="e.g., August 2026" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Due Amount (₹)</label>
+                                <input type="number" id="adminDueAmount" value="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm">
+                            </div>
+
+                            <div class="col-span-1 sm:col-span-2">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month</label>
+                                <input type="text" id="adminLastPaid" placeholder="e.g., August 2026" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm">
+                            </div>
+                        </div>
                     </div>
+                </div>
+
+                <div class="px-4 py-4 md:px-8 md:py-5 border-t border-slate-700 bg-slate-800/50 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
+                    <button id="cancelProfileBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 transition-colors font-medium text-sm">Cancel</button>
+                    <button id="saveProfileBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(8,145,178,0.4)] transition-all font-medium flex items-center justify-center text-sm">
+                        <span class="mr-2" id="saveProfileIcon">✅</span> <span id="saveProfileText">Save & Update</span>
+                    </button>
                 </div>
             </div>
         </div>
-
-        <!-- Modal Footer -->
-        <div class="px-8 py-5 border-t border-slate-700 bg-slate-800/50 flex justify-end space-x-4">
-            <button id="cancelApproveBtn" class="px-6 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 transition-colors font-medium">Cancel</button>
-            <button id="confirmApproveBtn" class="px-6 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(8,145,178,0.4)] transition-all font-medium flex items-center">
-                <span class="mr-2">✅</span> Save & Update
-            </button>
-        </div>
-    </div>
-</div>
     </main>
 
-    <!-- SPA Router Logic -->
+    <!-- UI Interactions (Sidebar & Router) -->
     <script>
+        // Sidebar Toggle Logic for Mobile
+        const sidebar = document.getElementById('sidebar');
+        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarBackdrop.classList.toggle('hidden');
+        }
+
+        mobileMenuBtn.addEventListener('click', toggleSidebar);
+        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+        // SPA Router Logic
         const views = {
             'nav-dashboard': { id: 'view-dashboard', title: 'Dashboard <span class="text-cyan-400 font-light">Overview</span>' },
             'nav-approvals': { id: 'view-approvals', title: 'Pending <span class="text-amber-400 font-light">Approvals</span>', name: "Pending Approvals Module" },
+            'nav-all-students': { id: 'view-all-students', title: 'All <span class="text-cyan-400 font-light">Students</span>', name: "Students Directory" },
             'nav-manual-entry': { id: 'view-placeholder', title: 'Manual <span class="text-cyan-400 font-light">Entry</span>', name: "Student Manual Entry Form" },
-            'nav-all-students': { id: 'view-placeholder', title: 'All <span class="text-cyan-400 font-light">Students</span>', name: "Students Directory" },
             'nav-seats': { id: 'view-placeholder', title: 'Seat <span class="text-cyan-400 font-light">Matrix</span>', name: "Visual Seat Layout" },
             'nav-fees': { id: 'view-placeholder', title: 'Fees <span class="text-cyan-400 font-light">Management</span>', name: "Fees & Payment Engine" },
             'nav-qr': { id: 'view-placeholder', title: 'QR <span class="text-cyan-400 font-light">Manager</span>', name: "QR Generator" },
@@ -357,16 +411,20 @@
             if(target.id === 'view-placeholder') {
                 document.getElementById('placeholderTitle').innerText = target.name + " Coming Soon";
             }
+            
+            // Close sidebar on mobile after clicking a link
+            if(window.innerWidth < 768 && !sidebar.classList.contains('-translate-x-full')) {
+                toggleSidebar();
+            }
         }
 
         Object.keys(views).forEach(navId => {
             document.getElementById(navId)?.addEventListener('click', () => switchView(navId));
         });
 
-        document.getElementById('btnViewAllApprovals')?.addEventListener('click', () => switchView('nav-approvals'));
+        // View All button linked to All Students
+        document.getElementById('btnViewAllStudents')?.addEventListener('click', () => switchView('nav-all-students'));
         document.getElementById('btnQuickAdd')?.addEventListener('click', () => switchView('nav-manual-entry'));
-        document.getElementById('btnQuickQR')?.addEventListener('click', () => switchView('nav-qr'));
-        document.getElementById('btnQuickNotice')?.addEventListener('click', () => switchView('nav-notices'));
     </script>
 
     <!-- Auth Protection -->

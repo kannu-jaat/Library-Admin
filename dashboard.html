@@ -22,7 +22,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
         }
         
-        /* Smooth Fade In Animation for Views */
         .view-section { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -42,7 +41,7 @@
                 </div>
             </div>
 
-            <!-- SPA Navigation Links with IDs -->
+            <!-- Navigation Links -->
             <nav class="mt-4 flex flex-col space-y-1 overflow-y-auto max-h-[calc(100vh-160px)]">
                 <a id="nav-dashboard" class="nav-item active flex items-center px-6 py-3 text-cyan-400 bg-slate-800/50">
                     <span class="text-xl mr-3">📊</span> Dashboard Overview
@@ -97,10 +96,10 @@
                 </div>
             </header>
 
-            <!-- 🔴 SPA CONTAINER: All Views go here -->
+            <!-- SPA CONTAINER -->
             <div class="flex-1 overflow-y-auto p-8 relative">
                 
-                <!-- VIEW 1: DASHBOARD (Default) -->
+                <!-- VIEW 1: DASHBOARD -->
                 <div id="view-dashboard" class="view-section block">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <div class="glass-card rounded-xl p-6 border-l-4 border-l-cyan-400 relative overflow-hidden">
@@ -167,7 +166,30 @@
                     </div>
                 </div>
 
-                <!-- VIEW 2: DUMMY SECTION FOR FUTURE MODULES -->
+                <!-- VIEW 2: PENDING APPROVALS -->
+                <div id="view-approvals" class="view-section hidden">
+                    <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Pending <span class="text-amber-400 font-light">Approvals</span></h2>
+                    
+                    <div class="glass-card rounded-xl p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-slate-300">
+                                <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-tl-lg">Student Details</th>
+                                        <th class="px-4 py-3">Contact & Addr.</th>
+                                        <th class="px-4 py-3">Membership Plan</th>
+                                        <th class="px-4 py-3 rounded-tr-lg">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pendingApprovalsTable">
+                                    <tr><td colspan="4" class="text-center py-6 text-slate-400">Loading pending requests...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: DUMMY SECTION -->
                 <div id="view-placeholder" class="view-section hidden glass-card rounded-xl p-10 text-center">
                     <span class="text-6xl mb-4 block">🚧</span>
                     <h2 class="text-3xl font-bold text-white mb-2" id="placeholderTitle">Section Under Construction</h2>
@@ -176,13 +198,103 @@
 
             </div>
         </div>
+
+        <!-- PENDING APPROVAL MODAL -->
+        <div id="approvalModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+            <div class="glass-card rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-cyan-500/30 shadow-[0_0_30px_rgba(0,255,255,0.15)]">
+                
+                <div class="px-8 py-5 border-b border-slate-700 flex justify-between items-center sticky top-0 bg-slate-800/90 backdrop-blur-md z-10">
+                    <h2 class="text-xl font-bold text-white flex items-center"><span class="text-cyan-400 mr-2">⚡</span> Review & Approve Student</h2>
+                    <button id="closeModalBtn" class="text-slate-400 hover:text-red-400 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- LEFT: Read-only Data -->
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">Student Information</h3>
+                        
+                        <div class="flex items-center space-x-4 mb-6">
+                            <img id="modalPhoto" src="" class="w-20 h-20 rounded-xl border-2 border-slate-600 object-cover">
+                            <div>
+                                <h4 id="modalName" class="text-lg font-bold text-white">Student Name</h4>
+                                <p id="modalRegTime" class="text-xs text-slate-400">Reg: --</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700/50">
+                                <label class="text-xs text-slate-500">Mobile</label>
+                                <p id="modalMobile" class="text-slate-200 font-medium">--</p>
+                            </div>
+                            <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700/50">
+                                <label class="text-xs text-slate-500">Membership</label>
+                                <p id="modalMembership" class="text-amber-400 font-medium">--</p>
+                            </div>
+                            <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700/50 col-span-2">
+                                <label class="text-xs text-slate-500">Address</label>
+                                <p id="modalAddress" class="text-slate-200 font-medium">--</p>
+                            </div>
+                        </div>
+                        
+                        <a id="modalIdProof" href="#" target="_blank" class="inline-flex items-center mt-2 text-cyan-400 hover:text-cyan-300 text-sm font-medium">
+                            <span class="mr-2">📄</span> View ID Proof Document
+                        </a>
+                    </div>
+
+                    <!-- RIGHT: Admin Inputs -->
+                    <div class="space-y-5">
+                        <h3 class="text-sm font-bold text-cyan-500 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">Admin Allotment</h3>
+                        
+                        <input type="hidden" id="modalStudentKey">
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Allot Seat Number</label>
+                            <input type="text" id="adminSeatNumber" placeholder="e.g., K03" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Valid Till</label>
+                            <input type="text" id="adminValidTill" placeholder="e.g., 30 August 2026" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status</label>
+                                <select id="adminFeeStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all appearance-none">
+                                    <option value="Paid">Paid</option>
+                                    <option value="Unpaid">Unpaid</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Due Amount (₹)</label>
+                                <input type="number" id="adminDueAmount" value="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month</label>
+                            <input type="text" id="adminLastPaid" placeholder="e.g., August 2026" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-8 py-5 border-t border-slate-700 bg-slate-800/50 flex justify-end space-x-4">
+                    <button id="cancelApproveBtn" class="px-6 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 transition-colors font-medium">Cancel</button>
+                    <button id="confirmApproveBtn" class="px-6 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(8,145,178,0.4)] transition-all font-medium flex items-center">
+                        <span class="mr-2">✅</span> Approve & Save
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <!-- SPA Router Logic (Handles navigation clicks) -->
+    <!-- SPA Router Logic -->
     <script>
         const views = {
             'nav-dashboard': { id: 'view-dashboard', title: 'Dashboard <span class="text-cyan-400 font-light">Overview</span>' },
-            'nav-approvals': { id: 'view-placeholder', title: 'Pending <span class="text-amber-400 font-light">Approvals</span>', name: "Pending Approvals Module" },
+            'nav-approvals': { id: 'view-approvals', title: 'Pending <span class="text-amber-400 font-light">Approvals</span>', name: "Pending Approvals Module" },
             'nav-manual-entry': { id: 'view-placeholder', title: 'Manual <span class="text-cyan-400 font-light">Entry</span>', name: "Student Manual Entry Form" },
             'nav-all-students': { id: 'view-placeholder', title: 'All <span class="text-cyan-400 font-light">Students</span>', name: "Students Directory" },
             'nav-seats': { id: 'view-placeholder', title: 'Seat <span class="text-cyan-400 font-light">Matrix</span>', name: "Visual Seat Layout" },
@@ -192,7 +304,6 @@
         };
 
         function switchView(navId) {
-            // Update Active Class
             document.querySelectorAll('.nav-item').forEach(el => {
                 el.classList.remove('active', 'text-cyan-400', 'bg-slate-800/50');
                 el.classList.add('text-slate-300');
@@ -203,7 +314,6 @@
                 activeNav.classList.remove('text-slate-300');
             }
 
-            // Hide all views, show target view
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             
             const target = views[navId];
@@ -217,12 +327,10 @@
             }
         }
 
-        // Add Event Listeners to Nav & Quick Actions
         Object.keys(views).forEach(navId => {
             document.getElementById(navId)?.addEventListener('click', () => switchView(navId));
         });
 
-        // Map Quick buttons to views
         document.getElementById('btnViewAllApprovals')?.addEventListener('click', () => switchView('nav-approvals'));
         document.getElementById('btnQuickAdd')?.addEventListener('click', () => switchView('nav-manual-entry'));
         document.getElementById('btnQuickQR')?.addEventListener('click', () => switchView('nav-qr'));
@@ -240,7 +348,6 @@
         document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
     </script>
     
-    <!-- Realtime Database Logistics -->
     <script type="module" src="./js/dashboard.js"></script>
 </body>
 </html>

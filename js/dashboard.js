@@ -181,7 +181,7 @@ onValue(attendanceRef, (snapshot) => {
     localStorage.setItem('adminDashboardCache', JSON.stringify(cache));
 });
 
-// --- 4. MODAL & APPROVAL LOGIC ---
+// --- 4. MODAL & APPROVAL LOGIC (UPDATED WITH ALL EDITABLE FIELDS) ---
 
 // Listen for "Review" button clicks
 pendingApprovalsTable.addEventListener('click', (e) => {
@@ -196,77 +196,94 @@ function openApprovalModal(studentKey) {
     const student = pendingStudentsData[studentKey];
     if(!student) return;
 
-    // Set Read-Only UI
+    // --- Fill Student Data (Editable Blue Fields) ---
     document.getElementById('modalStudentKey').value = studentKey;
-    document.getElementById('modalName').innerText = student.fullName || studentKey;
-    document.getElementById('modalRegTime').innerText = "Reg: " + (student.registrationTime || 'N/A');
-    document.getElementById('modalMobile').innerText = student.mobile || 'N/A';
-    document.getElementById('modalMembership').innerText = student.membership || 'N/A';
-    document.getElementById('modalAddress').innerText = student.address || 'N/A';
-    
+    document.getElementById('editFullName').value = student.fullName || '';
+    document.getElementById('editMobile').value = student.mobile || '';
+    document.getElementById('editPassword').value = student.password || '';
+    document.getElementById('editAddress').value = student.address || '';
+    document.getElementById('editMembership').value = student.membership || '';
+    document.getElementById('editRegTime').value = student.registrationTime || '';
+    document.getElementById('editPhotoUrl').value = student.photoUrl || '';
+    document.getElementById('editIdProofUrl').value = student.idProofUrl || '';
+
+    // Handle Previews & Links
     const photo = student.photoUrl || 'https://ui-avatars.com/api/?name=' + (student.fullName || 'User') + '&background=0D8ABC&color=fff';
-    document.getElementById('modalPhoto').src = photo;
+    document.getElementById('modalPhotoPreview').src = photo;
     
+    const idBtn = document.getElementById('btnViewId');
     if (student.idProofUrl) {
-        document.getElementById('modalIdProof').href = student.idProofUrl;
-        document.getElementById('modalIdProof').classList.remove('hidden');
+        idBtn.href = student.idProofUrl;
+        idBtn.classList.remove('opacity-50', 'pointer-events-none');
     } else {
-        document.getElementById('modalIdProof').classList.add('hidden');
+        idBtn.href = '#';
+        idBtn.classList.add('opacity-50', 'pointer-events-none');
     }
 
-    // Reset Admin Inputs
-    document.getElementById('adminSeatNumber').value = '';
-    document.getElementById('adminValidTill').value = `30 ${monthStr} ${year}`; 
-    document.getElementById('adminLastPaid').value = `${monthStr} ${year}`;
-    document.getElementById('adminFeeStatus').value = 'Paid';
-    document.getElementById('adminDueAmount').value = '0';
+    // --- Set Admin Default Inputs ---
+    document.getElementById('adminAccountStatus').value = 'Approved'; // Default action is to approve
+    document.getElementById('adminSeatNumber').value = student.seatNumber || '';
+    document.getElementById('adminValidTill').value = student.validTill || `30 ${monthStr} ${year}`; 
+    document.getElementById('adminFeeStatus').value = student.feeStatus || 'Paid';
+    document.getElementById('adminDueAmount').value = student.dueAmount || '0';
+    document.getElementById('adminLastPaid').value = student.lastPaidMonth || `${monthStr} ${year}`;
 
     approvalModal.classList.remove('hidden');
 }
+
+// Update photo preview dynamically if Admin edits the URL
+document.getElementById('editPhotoUrl').addEventListener('input', (e) => {
+    document.getElementById('modalPhotoPreview').src = e.target.value || 'https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff';
+});
 
 // Close Modal
 const closeModal = () => approvalModal.classList.add('hidden');
 document.getElementById('closeModalBtn').addEventListener('click', closeModal);
 document.getElementById('cancelApproveBtn').addEventListener('click', closeModal);
 
-// Approve Action
+// Save & Approve Action (Updates every single field)
 document.getElementById('confirmApproveBtn').addEventListener('click', async () => {
     const studentKey = document.getElementById('modalStudentKey').value;
     const btn = document.getElementById('confirmApproveBtn');
     
-    const seatNumber = document.getElementById('adminSeatNumber').value.trim();
-    const validTill = document.getElementById('adminValidTill').value.trim();
-    const feeStatus = document.getElementById('adminFeeStatus').value;
-    const dueAmount = parseInt(document.getElementById('adminDueAmount').value) || 0;
-    const lastPaidMonth = document.getElementById('adminLastPaid').value.trim();
+    // Fetch all values from the form to ensure edits are saved
+    const updates = {
+        fullName: document.getElementById('editFullName').value.trim(),
+        mobile: document.getElementById('editMobile').value.trim(),
+        password: document.getElementById('editPassword').value.trim(),
+        address: document.getElementById('editAddress').value.trim(),
+        membership: document.getElementById('editMembership').value.trim(),
+        registrationTime: document.getElementById('editRegTime').value.trim(),
+        photoUrl: document.getElementById('editPhotoUrl').value.trim(),
+        idProofUrl: document.getElementById('editIdProofUrl').value.trim(),
+        
+        status: document.getElementById('adminAccountStatus').value,
+        seatNumber: document.getElementById('adminSeatNumber').value.trim(),
+        validTill: document.getElementById('adminValidTill').value.trim(),
+        feeStatus: document.getElementById('adminFeeStatus').value,
+        dueAmount: parseInt(document.getElementById('adminDueAmount').value) || 0,
+        lastPaidMonth: document.getElementById('adminLastPaid').value.trim()
+    };
 
-    if (!seatNumber || !validTill || !lastPaidMonth) {
-        alert("Please fill all admin fields (Seat, Valid Till, Last Paid Month) before approving.");
+    if (!updates.seatNumber || !updates.validTill) {
+        alert("Please allot a Seat Number and Valid Till date before saving.");
         return;
     }
-
-    const updates = {
-        status: "Approved",
-        seatNumber: seatNumber,
-        validTill: validTill,
-        feeStatus: feeStatus,
-        dueAmount: dueAmount,
-        lastPaidMonth: lastPaidMonth
-    };
 
     try {
         btn.innerHTML = `<span class="mr-2">⏳</span> Saving...`;
         btn.disabled = true;
 
+        // Push massive update to specific student node
         await update(ref(db, `Students/${studentKey}`), updates);
         
         closeModal();
-        alert(`Success! ${studentKey} has been approved.`);
+        alert(`Success! Data for ${studentKey} updated and saved.`);
     } catch (error) {
-        console.error("Error approving student:", error);
+        console.error("Error updating student data:", error);
         alert("Something went wrong! Check console.");
     } finally {
-        btn.innerHTML = `<span class="mr-2">✅</span> Approve & Save`;
+        btn.innerHTML = `<span class="mr-2">✅</span> Save & Update`;
         btn.disabled = false;
     }
 });

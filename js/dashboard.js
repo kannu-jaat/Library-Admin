@@ -2,6 +2,9 @@ import { db, auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { ref, onValue, update, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+// ==========================================
+// 1. AUTHENTICATION & GLOBALS
+// ==========================================
 onAuthStateChanged(auth, (user) => {
     if (user) {
         document.getElementById('adminEmailDisplay').innerText = user.email;
@@ -39,31 +42,12 @@ const months = ["January", "February", "March", "April", "May", "June", "July", 
 const date = today.getDate();
 const monthStr = months[today.getMonth()];
 const year = today.getFullYear();
-const dateString1 = `${date} ${monthStr} ${year}`;
-const dateString2 = `${date < 10 ? '0' + date : date} ${monthStr} ${year}`;
+const dateString1 = `${date < 10 ? '0'+date : date} ${monthStr} ${year}`;
+const dateString2 = `${date} ${monthStr} ${year}`; // Fallback
 
 let allStudentsDict = JSON.parse(localStorage.getItem('allStudentsDataCache')) || {}; 
 let allPaymentsDict = JSON.parse(localStorage.getItem('allPaymentsDataCache')) || {};
 let globalTotalSeats = 100; 
-
-// 🔥 Helper Functions for Date Pickers (Converts YYYY-MM-DD to DD Month YYYY and vice-versa)
-function getDbDate(yyyy_mm_dd) {
-    if(!yyyy_mm_dd) return "";
-    const parts = yyyy_mm_dd.split('-');
-    if(parts.length !== 3) return "";
-    return `${parseInt(parts[2])} ${months[parseInt(parts[1])-1]} ${parts[0]}`;
-}
-function getShortMonthStr(yyyy_mm_dd) {
-    if(!yyyy_mm_dd) return "";
-    const parts = yyyy_mm_dd.split('-');
-    if(parts.length !== 3) return "";
-    return `${parts[2]} ${months[parseInt(parts[1])-1].substring(0,3)}`;
-}
-function getDbMonthKey(yyyy_mm) {
-    if(!yyyy_mm) return "";
-    const parts = yyyy_mm.split('-');
-    return `${months[parseInt(parts[1])-1]} ${parts[0]}`;
-}
 
 function parseRegDate(dateStr) {
     if(!dateStr) return new Date(0); 
@@ -76,15 +60,18 @@ function parseRegDate(dateStr) {
     } catch(e) { return new Date(0); }
 }
 
+// 🔥 FEE CALCULATORS 
 function checkFeeStatus(validTillStr) {
     if(!validTillStr) return "Due";
     try {
         const parts = validTillStr.trim().split(' ');
         if(parts.length < 3) return "Due";
         const day = parseInt(parts[0]);
-        const monthIdx = months.indexOf(parts[1]);
+        const monthName = parts[1];
         const yr = parseInt(parts[2]);
+        const monthIdx = months.indexOf(monthName);
         if(monthIdx === -1) return "Due";
+
         const validDate = new Date(yr, monthIdx, day, 23, 59, 59);
         return today <= validDate ? "Paid" : "Due";
     } catch(e) { return "Due"; }
@@ -92,13 +79,18 @@ function checkFeeStatus(validTillStr) {
 
 function getLatestPaidMonth(studentKey) {
     const studentPayments = allPaymentsDict[studentKey];
-    if(!studentPayments) return "No Payment";
+    if(!studentPayments) return "No Payment Record";
+    
     let monthsList = Object.keys(studentPayments);
-    if(monthsList.length === 0) return "No Payment";
-    monthsList.sort((a, b) => new Date(b) - new Date(a));
+    if(monthsList.length === 0) return "No Payment Record";
+
+    monthsList.sort((a, b) => new Date("01 " + b) - new Date("01 " + a));
     return monthsList[0]; 
 }
 
+// ==========================================
+// 2. SEAT MATRIX RENDER ENGINE
+// ==========================================
 function renderSeatMap() {
     if(!seatSearchQuery || !seatFilterStatus) return;
     const query = seatSearchQuery.value.toLowerCase();
@@ -169,6 +161,10 @@ function renderSeatMap() {
 seatSearchQuery.addEventListener('input', renderSeatMap);
 seatFilterStatus.addEventListener('change', renderSeatMap);
 
+
+// ==========================================
+// 3. CACHE MANAGER
+// ==========================================
 function loadCachedDashboard() {
     const cachedData = JSON.parse(localStorage.getItem('adminDashboardCache'));
     if (cachedData) {
@@ -188,6 +184,9 @@ function loadCachedDashboard() {
 }
 loadCachedDashboard();
 
+// ==========================================
+// 4. FIREBASE REALTIME FETCHERS
+// ==========================================
 onValue(ref(db, 'Payments'), (snapshot) => {
     if(snapshot.exists()) {
         allPaymentsDict = snapshot.val();
@@ -227,8 +226,8 @@ const studentSnapshotHandler = (snapshot) => {
             const latestPaid = getLatestPaidMonth(studentKey);
             
             let feeColor = currentFeeStatus === "Paid" ? "text-emerald-400" : "text-red-400 font-bold";
-            let feeText = currentFeeStatus === "Paid" ? "Paid" : `Due`;
-            let feeChipColor = currentFeeStatus === "Paid" ? "bg-emerald-900/40 border-emerald-500/30 text-emerald-400" : "bg-red-900/40 border-red-500/30 text-red-400";
+            let feeText = currentFeeStatus === "Paid" ? "Paid" : `Due (₹${student.dueAmount || 0})`;
+            let feeChipColor = currentFeeStatus === "Paid" ? "bg-emerald-900/40 border-emerald-500/30 text-emerald-400" : "bg-red-900/40 border-red-500/30 text-red-400 font-bold shadow-[0_0_8px_rgba(239,68,68,0.3)]";
 
             if (student.status === "Approved") {
                 totalActive++;
@@ -250,16 +249,17 @@ const studentSnapshotHandler = (snapshot) => {
                         <td class="px-4 py-3"><button class="btn-open-profile bg-slate-700 hover:bg-cyan-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" data-key="${studentKey}">Profile</button></td>
                     </tr>`;
 
+                // 🔥 ENTIRE ROW IS CLICKABLE FOR FEE HISTORY
                 feesHTML += `
-                    <tr class="border-b border-slate-700/50 hover:bg-slate-800/40 transition-all">
-                        <td class="px-4 py-4 flex items-center">
+                    <tr class="border-b border-slate-700/50 hover:bg-slate-800/60 transition-all cursor-pointer btn-open-fee-history" data-key="${studentKey}" data-name="${student.fullName || studentKey}">
+                        <td class="px-4 py-4 flex items-center pointer-events-none">
                             <img src="${photo}" class="w-8 h-8 md:w-10 md:h-10 rounded-full border border-slate-600 mr-3 object-cover">
                             <div><div class="text-white font-medium text-xs md:text-sm">${student.fullName || studentKey}</div><div class="text-[10px] md:text-xs text-slate-500">Seat: ${student.seatNumber || 'N/A'}</div></div>
                         </td>
-                        <td class="px-4 py-4 text-xs md:text-sm text-slate-300">${student.validTill || '--'}</td>
-                        <td class="px-4 py-4"><span class="px-2 py-1 rounded border text-xs ${feeChipColor}">${feeText}</span></td>
-                        <td class="px-4 py-4 text-xs md:text-sm text-amber-400">${latestPaid}</td>
-                        <td class="px-4 py-4"><button class="btn-open-history bg-emerald-600/20 text-emerald-400 border border-emerald-500/50 hover:bg-emerald-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-[0_0_8px_rgba(16,185,129,0.2)]" data-key="${studentKey}" data-name="${student.fullName || studentKey}">Manage Fees</button></td>
+                        <td class="px-4 py-4 text-xs md:text-sm text-slate-300 pointer-events-none">${student.validTill || '--'}</td>
+                        <td class="px-4 py-4 pointer-events-none"><span class="px-2 py-1 rounded border text-xs ${feeChipColor}">${feeText}</span></td>
+                        <td class="px-4 py-4 text-xs md:text-sm text-amber-400 pointer-events-none">${latestPaid}</td>
+                        <td class="px-4 py-4 pointer-events-none"><button class="bg-emerald-600/20 text-emerald-400 border border-emerald-500/50 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-[0_0_8px_rgba(16,185,129,0.2)]">History</button></td>
                     </tr>`;
             }
 
@@ -316,7 +316,6 @@ const studentSnapshotHandler = (snapshot) => {
         renderSeatMap();
     }
 };
-onValue(ref(db, 'Students'), studentSnapshotHandler);
 
 onValue(ref(db, 'Attendance'), (snapshot) => {
     let presentCount = 0;
@@ -332,7 +331,7 @@ onValue(ref(db, 'Attendance'), (snapshot) => {
 });
 
 // ==========================================
-// 5. PROFILE MODAL LOGIC
+// 5. PROFILE MODAL LOGIC (View/Edit)
 // ==========================================
 let isEditingMode = false;
 
@@ -349,10 +348,14 @@ function openProfileModal(studentKey, isApprovalMode = false) {
     setProfileInputsEditable(false);
 
     document.getElementById('modalStudentKey').value = studentKey;
-    document.getElementById('editFullName').value = student.fullName || ''; document.getElementById('editMobile').value = student.mobile || '';
-    document.getElementById('editPassword').value = student.password || ''; document.getElementById('editAddress').value = student.address || '';
-    document.getElementById('editMembership').value = student.membership || ''; document.getElementById('editRegTime').value = student.registrationTime || '';
-    document.getElementById('editPhotoUrl').value = student.photoUrl || ''; document.getElementById('editIdProofUrl').value = student.idProofUrl || '';
+    document.getElementById('editFullName').value = student.fullName || ''; 
+    document.getElementById('editMobile').value = student.mobile || '';
+    document.getElementById('editPassword').value = student.password || ''; 
+    document.getElementById('editAddress').value = student.address || '';
+    document.getElementById('editMembership').value = student.membership || ''; 
+    document.getElementById('editRegTime').value = student.registrationTime || '';
+    document.getElementById('editPhotoUrl').value = student.photoUrl || ''; 
+    document.getElementById('editIdProofUrl').value = student.idProofUrl || '';
     document.getElementById('modalPhotoPreview').src = student.photoUrl || `https://ui-avatars.com/api/?name=${student.fullName || 'User'}&background=0D8ABC&color=fff`;
     
     const idBtn = document.getElementById('btnViewId');
@@ -362,6 +365,8 @@ function openProfileModal(studentKey, isApprovalMode = false) {
     document.getElementById('adminAccountStatus').value = student.status || 'Approved'; 
     document.getElementById('adminSeatNumber').value = student.seatNumber || '';
     document.getElementById('adminValidTill').value = student.validTill || ''; 
+    document.getElementById('adminDueAmount').value = student.dueAmount || '0';
+    
     document.getElementById('displayFeeStatus').value = checkFeeStatus(student.validTill);
     document.getElementById('displayLastPaid').value = getLatestPaidMonth(studentKey);
 
@@ -379,11 +384,14 @@ function openProfileModal(studentKey, isApprovalMode = false) {
     profileModal.classList.remove('hidden');
 }
 
-function setProfileInputsEditable(enable) { document.querySelectorAll('.profile-input').forEach(input => input.disabled = !enable); }
+function setProfileInputsEditable(enable) {
+    document.querySelectorAll('.profile-input').forEach(input => input.disabled = !enable);
+}
 
 toggleEditModeBtn.addEventListener('click', () => {
     isEditingMode = !isEditingMode;
     setProfileInputsEditable(isEditingMode);
+
     if(isEditingMode) {
         document.getElementById('modalMainTitle').innerText = "Edit Student Profile"; document.getElementById('modalIcon').innerText = "✏️";
         toggleEditModeBtn.innerHTML = `<span class="mr-2">🔒</span> Lock / View Mode`; saveProfileBtn.classList.remove('hidden');
@@ -394,19 +402,24 @@ toggleEditModeBtn.addEventListener('click', () => {
 });
 
 const closeModal = () => profileModal.classList.add('hidden');
-document.getElementById('closeProfileModalBtn').addEventListener('click', closeModal); document.getElementById('cancelProfileBtn').addEventListener('click', closeModal);
+document.getElementById('closeProfileModalBtn').addEventListener('click', closeModal); 
+document.getElementById('cancelProfileBtn').addEventListener('click', closeModal);
 
 saveProfileBtn.addEventListener('click', async () => {
     const studentKey = document.getElementById('modalStudentKey').value; 
     const btn = document.getElementById('saveProfileBtn');
+    
     const updates = {
         fullName: document.getElementById('editFullName').value.trim(), mobile: document.getElementById('editMobile').value.trim(),
         password: document.getElementById('editPassword').value.trim(), address: document.getElementById('editAddress').value.trim(),
         membership: document.getElementById('editMembership').value.trim(), photoUrl: document.getElementById('editPhotoUrl').value.trim(),
         idProofUrl: document.getElementById('editIdProofUrl').value.trim(), status: document.getElementById('adminAccountStatus').value,
-        seatNumber: document.getElementById('adminSeatNumber').value.trim(), validTill: document.getElementById('adminValidTill').value.trim()
+        seatNumber: document.getElementById('adminSeatNumber').value.trim(), validTill: document.getElementById('adminValidTill').value.trim(),
+        dueAmount: parseInt(document.getElementById('adminDueAmount').value) || 0
     };
+
     if (updates.status === "Approved" && (!updates.seatNumber || !updates.validTill)) return alert("Please allot a Seat Number and Valid Till date.");
+
     try {
         btn.innerHTML = `<span class="mr-2">⏳</span> Saving...`; btn.disabled = true;
         await update(ref(db, `Students/${studentKey}`), updates);
@@ -419,112 +432,152 @@ document.getElementById('searchAllStudents').addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase(); const rows = allStudentsTable.getElementsByTagName('tr');
     for (let row of rows) { row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none'; }
 });
+
 document.getElementById('searchFeesStudents').addEventListener('input', (e) => {
     const query = e.target.value.toLowerCase(); const rows = feesTable.getElementsByTagName('tr');
     for (let row of rows) { row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none'; }
 });
 
 // ==========================================
-// 6. DUAL-PANE FEE HISTORY & PAYMENT ENGINE
+// 6. 🔥 NEW: FEES HISTORY & ADD PAYMENT ENGINE
 // ==========================================
 const feeHistoryModal = document.getElementById('feeHistoryModal');
-const closeFeeModal = () => feeHistoryModal.classList.add('hidden');
-document.getElementById('closeFeeModalBtn').addEventListener('click', closeFeeModal);
-document.getElementById('cancelFeeModalBtn').addEventListener('click', closeFeeModal);
+const closeFeeHistoryModal = () => feeHistoryModal.classList.add('hidden');
+document.getElementById('closeFeeHistoryBtn').addEventListener('click', closeFeeHistoryModal);
 
-const payMonthPicker = document.getElementById('payMonthPicker');
-const payD2DEnd = document.getElementById('payD2DEnd');
-const payNewValidTill = document.getElementById('payNewValidTill');
-
-// Auto-fill validTill when D2D End is picked
-payD2DEnd.addEventListener('input', (e) => {
-    payNewValidTill.value = e.target.value; 
-});
-
+// Open Modal when anywhere on the fee row is clicked
 document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.btn-open-history');
-    if (btn) {
-        const key = btn.getAttribute('data-key');
-        const name = btn.getAttribute('data-name');
-        
-        document.getElementById('payStudentKey').value = key;
-        document.getElementById('payStudentName').innerText = `${name} (${key})`;
-        
-        // Populate History Left Pane
-        const historyContainer = document.getElementById('historyTableContainer');
-        const studentPayments = allPaymentsDict[key];
-        
-        if(!studentPayments || Object.keys(studentPayments).length === 0) {
-            historyContainer.innerHTML = `<div class="text-center text-slate-500 py-4 text-sm">No payment history found.</div>`;
-        } else {
-            let histHtml = '';
-            let monthsList = Object.keys(studentPayments).sort((a, b) => new Date(b) - new Date(a));
-            monthsList.forEach(m => {
-                let p = studentPayments[m];
-                histHtml += `
-                <div class="bg-slate-800/50 p-3 rounded-lg border border-slate-700 flex justify-between items-center">
-                    <div>
-                        <p class="text-emerald-400 font-bold text-sm">${m}</p>
-                        <p class="text-[10px] text-slate-400">D2D: ${p.d2d || 'N/A'} <br>Paid On: ${p.payDate || 'N/A'}</p>
-                    </div>
-                    <div class="text-white font-bold bg-slate-900 px-3 py-1 rounded-md border border-slate-600">₹${p.amount}</div>
-                </div>`;
-            });
-            historyContainer.innerHTML = histHtml;
-        }
-
-        // Set Defaults for Add Payment Right Pane
-        const tDate = new Date();
-        const curY = tDate.getFullYear();
-        const curM = (tDate.getMonth() + 1).toString().padStart(2, '0');
-        
-        payMonthPicker.value = `${curY}-${curM}`; // Current Month
-        document.getElementById('payAmount').value = '';
-        document.getElementById('payD2DStart').value = '';
-        document.getElementById('payD2DEnd').value = '';
-        payNewValidTill.value = '';
-        
-        feeHistoryModal.classList.remove('hidden');
+    const feeRow = e.target.closest('.btn-open-fee-history');
+    if (feeRow) {
+        const key = feeRow.getAttribute('data-key');
+        const name = feeRow.getAttribute('data-name');
+        openFeeHistoryModal(key, name);
     }
 });
 
-document.getElementById('confirmPaymentBtn').addEventListener('click', async () => {
-    const studentKey = document.getElementById('payStudentKey').value;
-    const btn = document.getElementById('confirmPaymentBtn');
+function openFeeHistoryModal(studentKey, studentName) {
+    document.getElementById('feeStudentKey').value = studentKey;
+    document.getElementById('feeStudentName').innerText = studentName;
     
-    const mValue = document.getElementById('payMonthPicker').value; // YYYY-MM
+    // 1. Populate Left Side (History)
+    const historyList = document.getElementById('feeHistoryList');
+    const payments = allPaymentsDict[studentKey] || {};
+    let keys = Object.keys(payments);
+    
+    if(keys.length === 0) {
+        historyList.innerHTML = `<div class="text-slate-500 text-sm text-center py-6 border border-dashed border-slate-700 rounded-lg">No payment history found.</div>`;
+    } else {
+        // Sort keys by Month/Year descending
+        keys.sort((a, b) => new Date("01 " + b) - new Date("01 " + a));
+        let hHTML = '';
+        keys.forEach(k => {
+            let p = payments[k];
+            hHTML += `
+            <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-xl flex justify-between items-center hover:bg-slate-800 transition-colors shadow-sm">
+                <div>
+                    <h4 class="text-emerald-400 font-bold text-sm mb-1">${k}</h4>
+                    <p class="text-[11px] text-slate-400">Duration: <span class="text-slate-200">${p.d2d || '--'}</span></p>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Paid on: ${p.payDate || '--'}</p>
+                </div>
+                <div class="text-white font-bold text-lg bg-emerald-900/30 px-3 py-1.5 rounded-lg border border-emerald-500/20">₹${p.amount || 0}</div>
+            </div>`;
+        });
+        historyList.innerHTML = hHTML;
+    }
+
+    // 2. Reset Right Side (New Payment Form)
+    const todayStr = `${year}-${(today.getMonth()+1).toString().padStart(2, '0')}`;
+    document.getElementById('payMonthInput').value = todayStr;
+    document.getElementById('payMonthPreview').innerText = `${monthStr} ${year}`;
+    
+    document.getElementById('payAmount').value = '';
+    document.getElementById('payD2DStart').value = '';
+    document.getElementById('payD2DEnd').value = '';
+    document.getElementById('payD2DPreview').innerText = '--';
+    
+    // Fetch current profile due amount if any
+    const currDue = (allStudentsDict[studentKey] && allStudentsDict[studentKey].dueAmount) ? allStudentsDict[studentKey].dueAmount : 0;
+    document.getElementById('payNewValidTill').value = '';
+    document.getElementById('payNewDue').value = currDue;
+
+    feeHistoryModal.classList.remove('hidden');
+}
+
+// Format Month Output logic
+document.getElementById('payMonthInput').addEventListener('change', (e) => {
+    let val = e.target.value;
+    if(val) {
+        let [yr, mo] = val.split('-');
+        document.getElementById('payMonthPreview').innerText = `${months[parseInt(mo)-1]} ${yr}`;
+    }
+});
+
+// Auto Format D2D & Valid Till Logic
+function updateD2DAndValidTill() {
+    const startVal = document.getElementById('payD2DStart').value;
+    const endVal = document.getElementById('payD2DEnd').value;
+    
+    if(startVal && endVal) {
+        let sDate = new Date(startVal);
+        let eDate = new Date(endVal);
+        
+        let sDay = sDate.getDate() < 10 ? '0'+sDate.getDate() : sDate.getDate();
+        let sMon = months[sDate.getMonth()].substring(0,3);
+        
+        let eDay = eDate.getDate() < 10 ? '0'+eDate.getDate() : eDate.getDate();
+        let eMon = months[eDate.getMonth()].substring(0,3);
+        let eMonFull = months[eDate.getMonth()];
+        let eYear = eDate.getFullYear();
+        
+        const d2dStr = `${sDay} ${sMon} - ${eDay} ${eMon}`;
+        document.getElementById('payD2DPreview').innerText = d2dStr;
+        
+        // Magically update Valid Till Text Input
+        document.getElementById('payNewValidTill').value = `${eDay} ${eMonFull} ${eYear}`;
+    }
+}
+document.getElementById('payD2DStart').addEventListener('change', updateD2DAndValidTill);
+document.getElementById('payD2DEnd').addEventListener('change', updateD2DAndValidTill);
+
+// Save New Payment
+document.getElementById('confirmFeePaymentBtn').addEventListener('click', async () => {
+    const studentKey = document.getElementById('feeStudentKey').value;
+    const btn = document.getElementById('confirmFeePaymentBtn');
+    
+    const monthVal = document.getElementById('payMonthInput').value;
     const amount = document.getElementById('payAmount').value.trim();
-    const dStart = document.getElementById('payD2DStart').value; // YYYY-MM-DD
-    const dEnd = document.getElementById('payD2DEnd').value; // YYYY-MM-DD
-    const validVal = payNewValidTill.value; // YYYY-MM-DD
+    const d2dStr = document.getElementById('payD2DPreview').innerText;
+    const newValidTill = document.getElementById('payNewValidTill').value.trim();
+    const newDue = document.getElementById('payNewDue').value.trim();
 
-    if (!mValue || !amount || !dStart || !dEnd || !validVal) return alert("Please fill all payment details and dates.");
+    if (!monthVal || !amount || d2dStr === '--' || !newValidTill) {
+        return alert("Please fill all details (Month, Amount, and D2D Dates).");
+    }
 
-    // Convert Date Formats for Database
-    const dbMonthYear = getDbMonthKey(mValue); // "August 2026"
-    const d2dString = `${getShortMonthStr(dStart)} - ${getShortMonthStr(dEnd)}`; // "01 Aug - 30 Aug"
-    const dbValidTillDate = getDbDate(validVal); // "30 August 2026"
+    const [yr, mo] = monthVal.split('-');
+    const formattedMonthYear = `${months[parseInt(mo)-1]} ${yr}`;
 
     try {
-        btn.innerHTML = `⏳ Saving...`; btn.disabled = true;
+        btn.innerHTML = `⏳ Processing Data...`; btn.disabled = true;
 
         const updates = {};
-        updates[`Payments/${studentKey}/${dbMonthYear}`] = {
+        updates[`Payments/${studentKey}/${formattedMonthYear}`] = {
             amount: parseInt(amount),
-            d2d: d2dString,
-            payDate: dateString1 // Today's date
+            d2d: d2dStr,
+            payDate: dateString1
         };
-        updates[`Students/${studentKey}/validTill`] = dbValidTillDate;
+        updates[`Students/${studentKey}/validTill`] = newValidTill;
+        updates[`Students/${studentKey}/dueAmount`] = parseInt(newDue) || 0;
 
         await update(ref(db), updates);
         
-        alert(`✅ Payment Saved for ${studentKey}`);
-        closeFeeModal();
+        alert(`✅ Payment Saved & Profile Updated for ${studentKey}`);
+        closeFeeHistoryModal();
     } catch (error) {
         console.error(error);
-        alert("Failed to save payment.");
+        alert("Failed to save payment to database.");
     } finally {
-        btn.innerHTML = `✅ Save New Payment`; btn.disabled = false;
+        btn.innerHTML = `✅ Save Payment & Update Profile`; btn.disabled = false;
     }
 });
 

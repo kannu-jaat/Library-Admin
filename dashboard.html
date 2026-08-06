@@ -33,7 +33,6 @@
         .view-section { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Disabled inputs style for View Mode */
         input:disabled, select:disabled { background-color: rgba(15, 23, 42, 0.6) !important; color: #94a3b8 !important; cursor: not-allowed; border-color: rgba(255,255,255,0.05) !important; }
     </style>
 </head>
@@ -237,16 +236,10 @@
                                 </div>
                             </div>
                             <div>
-                                <h3 class="text-sm font-bold text-emerald-500 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">3. Library Allotment & Fees</h3>
+                                <h3 class="text-sm font-bold text-emerald-500 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">3. Library Allotment & Validity</h3>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div><label class="block text-xs font-medium text-slate-400 mb-1">Seat Number</label><input type="text" id="manualSeat" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white text-sm" placeholder="e.g., 3"></div>
                                     <div><label class="block text-xs font-medium text-slate-400 mb-1">Valid Till Date</label><input type="text" id="manualValidTill" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white text-sm" placeholder="e.g., 30 August 2026"></div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status</label>
-                                        <select id="manualFeeStatus" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white text-sm"><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option></select>
-                                    </div>
-                                    <div><label class="block text-xs font-medium text-slate-400 mb-1">Due Amount (₹)</label><input type="number" id="manualDueAmount" value="0" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white text-sm"></div>
-                                    <div class="sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month</label><input type="text" id="manualLastPaid" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white text-sm" placeholder="e.g., August 2026"></div>
                                 </div>
                             </div>
                             <div class="pt-4 flex justify-end">
@@ -288,7 +281,7 @@
             </div>
         </div>
 
-        <!-- REUSABLE PROFILE MODAL (View Mode Default + Edit Button) -->
+        <!-- REUSABLE PROFILE MODAL (View Mode Default + Edit Toggle) -->
         <div id="profileModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm transition-opacity">
             <div class="glass-card rounded-xl md:rounded-2xl w-full max-w-5xl max-h-[95vh] overflow-y-auto border border-cyan-500/30 shadow-[0_0_30px_rgba(0,255,255,0.15)]">
                 
@@ -337,14 +330,16 @@
                             </div>
                             <div><label class="block text-xs font-medium text-slate-400 mb-1">Seat Number</label><input type="text" id="adminSeatNumber" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
                             <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Valid Till Date</label><input type="text" id="adminValidTill" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
+                            
+                            <!-- Computed Fee Status & Last Paid Month (Read-only UI) -->
                             <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status</label>
-                                <select id="adminFeeStatus" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white text-sm" disabled>
-                                    <option value="Paid">Paid</option><option value="Unpaid">Unpaid</option>
-                                </select>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status (Auto)</label>
+                                <input type="text" id="displayFeeStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-emerald-400 font-bold text-sm" disabled>
                             </div>
-                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Due Amount (₹)</label><input type="number" id="adminDueAmount" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
-                            <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month</label><input type="text" id="adminLastPaid" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month (From Payments)</label>
+                                <input type="text" id="displayLastPaid" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-amber-400 font-bold text-sm" disabled>
+                            </div>
                         </div>
                     </div>
                 </div>

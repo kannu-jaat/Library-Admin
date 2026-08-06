@@ -75,7 +75,7 @@
                     <span class="text-xl mr-3">🪑</span> Seat Management
                 </a>
                 <a id="nav-fees" class="nav-item flex items-center px-6 py-3 text-slate-300">
-                    <span class="text-xl mr-3">💳</span> Fees & Approvals
+                    <span class="text-xl mr-3">💳</span> Fees Management
                 </a>
                 <a id="nav-qr" class="nav-item flex items-center px-6 py-3 text-slate-300">
                     <span class="text-xl mr-3">📱</span> QR & Attendance
@@ -125,7 +125,7 @@
                             <div><p class="text-xs md:text-sm text-amber-200 font-mono mb-1 uppercase">Present Today</p><h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2" id="statPresentToday">--</h3></div>
                             <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl md:text-7xl">📅</div>
                         </div>
-                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-red-500 relative overflow-hidden flex flex-col justify-between">
+                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-red-500 relative overflow-hidden flex flex-col justify-between cursor-pointer hover:bg-slate-800/80 transition-all" onclick="document.getElementById('nav-fees').click()">
                             <div><p class="text-xs md:text-sm text-red-200 font-mono mb-1 uppercase">Pending Fees</p><h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2" id="statPendingFees">--</h3></div>
                             <div id="pendingFeesNames" class="text-[10px] md:text-xs text-red-300 mt-2 truncate w-full h-4">Loading names...</div>
                             <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl md:text-7xl">💳</div>
@@ -162,38 +162,47 @@
                         <div class="glass-card rounded-xl p-4 md:p-6 w-full">
                             <h2 class="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 border-b border-slate-700/50 pb-4">Quick Actions</h2>
                             <div class="space-y-3 md:space-y-4">
-                                <button id="btnQuickAdd" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base shadow-[0_0_10px_rgba(8,145,178,0.4)]">
+                                <button onclick="document.getElementById('nav-manual-entry').click()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base shadow-[0_0_10px_rgba(8,145,178,0.4)]">
                                     <span class="text-lg mr-2">📝</span> Add Manual Entry
                                 </button>
-                                <button id="btnQuickSeat" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base">
-                                    <span class="text-lg mr-2">🪑</span> View Seat Matrix
+                                <button onclick="document.getElementById('nav-fees').click()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base">
+                                    <span class="text-lg mr-2">💳</span> Collect Pending Fees
                                 </button>
-                                <button id="btnQuickQR" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base">
-                                    <span class="text-lg mr-2">🔲</span> Generate Today's QR
+                                <button onclick="document.getElementById('nav-seats').click()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base">
+                                    <span class="text-lg mr-2">🪑</span> View Seat Matrix
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- VIEW 2: PENDING APPROVALS -->
-                <div id="view-approvals" class="view-section hidden w-full">
-                    <h2 class="text-xl md:text-2xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Pending <span class="text-amber-400 font-light">Approvals</span></h2>
+                <!-- VIEW: FEES MANAGEMENT -->
+                <div id="view-fees" class="view-section hidden w-full">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700/50 pb-4">
+                        <h2 class="text-xl md:text-2xl font-bold text-white">Fees <span class="text-cyan-400 font-light">Management</span></h2>
+                    </div>
+                    
                     <div class="glass-card rounded-xl p-4 md:p-6 w-full overflow-hidden">
+                        <h3 class="text-sm font-bold text-red-400 uppercase tracking-wider mb-4 border-b border-slate-700/50 pb-2">Pending Dues</h3>
                         <div class="overflow-x-auto w-full">
                             <table class="w-full text-left text-sm text-slate-300 whitespace-nowrap">
                                 <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
-                                    <tr><th class="px-4 py-3 rounded-tl-lg">Student Details</th><th class="px-4 py-3">Contact Info</th><th class="px-4 py-3">Membership</th><th class="px-4 py-3 rounded-tr-lg">Action</th></tr>
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-tl-lg">Student Name</th>
+                                        <th class="px-4 py-3">Seat & Plan</th>
+                                        <th class="px-4 py-3">Validity Expired On</th>
+                                        <th class="px-4 py-3 rounded-tr-lg">Action</th>
+                                    </tr>
                                 </thead>
-                                <tbody id="pendingApprovalsTable">
-                                    <tr><td colspan="4" class="text-center py-6 text-slate-400">Loading pending requests...</td></tr>
+                                <tbody id="feesPendingTable">
+                                    <tr><td colspan="4" class="text-center py-6 text-slate-400">Loading pending dues...</td></tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- VIEW 3: ALL STUDENTS -->
+                <!-- VIEW: ALL STUDENTS -->
                 <div id="view-all-students" class="view-section hidden w-full">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700/50 pb-4 space-y-4 md:space-y-0">
                         <h2 class="text-xl md:text-2xl font-bold text-white">All <span class="text-cyan-400 font-light">Students</span></h2>
@@ -213,11 +222,12 @@
                     </div>
                 </div>
 
-                <!-- VIEW 4: MANUAL ENTRY FORM -->
+                <!-- VIEW: MANUAL ENTRY -->
                 <div id="view-manual-entry" class="view-section hidden w-full">
                     <h2 class="text-xl md:text-2xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Add <span class="text-cyan-400 font-light">Manual Entry</span></h2>
                     <div class="glass-card rounded-xl p-4 md:p-8 w-full max-w-4xl mx-auto">
                         <form id="manualEntryForm" class="space-y-8">
+                            <!-- [Manual Form content remains identical to previous] -->
                             <div>
                                 <h3 class="text-sm font-bold text-cyan-500 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">1. System Identity</h3>
                                 <div class="relative">
@@ -251,7 +261,7 @@
                     </div>
                 </div>
 
-                <!-- VIEW 5: SEAT MANAGEMENT -->
+                <!-- VIEW: SEAT MANAGEMENT -->
                 <div id="view-seats" class="view-section hidden w-full">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700/50 pb-4 space-y-4 md:space-y-0">
                         <h2 class="text-xl md:text-2xl font-bold text-white">Seat <span class="text-cyan-400 font-light">Matrix</span></h2>
@@ -273,6 +283,23 @@
                     </div>
                 </div>
 
+                <!-- VIEW: PENDING APPROVALS -->
+                <div id="view-approvals" class="view-section hidden w-full">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Pending <span class="text-amber-400 font-light">Approvals</span></h2>
+                    <div class="glass-card rounded-xl p-4 md:p-6 w-full overflow-hidden">
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left text-sm text-slate-300 whitespace-nowrap">
+                                <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
+                                    <tr><th class="px-4 py-3 rounded-tl-lg">Student Details</th><th class="px-4 py-3">Contact Info</th><th class="px-4 py-3">Membership</th><th class="px-4 py-3 rounded-tr-lg">Action</th></tr>
+                                </thead>
+                                <tbody id="pendingApprovalsTable">
+                                    <tr><td colspan="4" class="text-center py-6 text-slate-400">Loading pending requests...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="view-placeholder" class="view-section hidden glass-card rounded-xl p-6 md:p-10 text-center w-full">
                     <span class="text-5xl md:text-6xl mb-4 block">🚧</span>
                     <h2 class="text-2xl md:text-3xl font-bold text-white mb-2" id="placeholderTitle">Section Under Construction</h2>
@@ -281,17 +308,14 @@
             </div>
         </div>
 
-        <!-- REUSABLE PROFILE MODAL (View Mode Default + Edit Toggle) -->
+        <!-- REUSABLE PROFILE MODAL -->
         <div id="profileModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm transition-opacity">
             <div class="glass-card rounded-xl md:rounded-2xl w-full max-w-5xl max-h-[95vh] overflow-y-auto border border-cyan-500/30 shadow-[0_0_30px_rgba(0,255,255,0.15)]">
-                
+                <!-- Keep existing Profile Modal content -->
                 <div class="px-4 py-4 md:px-8 md:py-5 border-b border-slate-700 flex justify-between items-center sticky top-0 bg-slate-800/90 backdrop-blur-md z-10">
-                    <h2 class="text-lg md:text-xl font-bold text-white flex items-center"><span class="text-cyan-400 mr-2" id="modalIcon">👁️</span> <span id="modalMainTitle">Student Profile (View Mode)</span></h2>
-                    <button id="closeProfileModalBtn" class="text-slate-400 hover:text-red-400 transition-colors">
-                        <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
+                    <h2 class="text-lg md:text-xl font-bold text-white flex items-center"><span class="text-cyan-400 mr-2" id="modalIcon">👁️</span> <span id="modalMainTitle">Student Profile</span></h2>
+                    <button id="closeProfileModalBtn" class="text-slate-400 hover:text-red-400 transition-colors"><svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                 </div>
-
                 <div class="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
                     <div class="space-y-4">
                         <h3 class="text-xs md:text-sm font-bold text-blue-400 uppercase tracking-wider mb-2 md:mb-4 border-b border-slate-700 pb-2">Student Provided Details</h3>
@@ -299,24 +323,14 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="col-span-1 sm:col-span-2 flex items-center space-x-4 mb-2">
                                 <img id="modalPhotoPreview" src="" class="w-14 h-14 md:w-16 md:h-16 rounded-xl border-2 border-blue-500 object-cover">
-                                <div class="flex-1">
-                                    <label class="block text-xs font-medium text-slate-400 mb-1">Photo URL</label>
-                                    <input type="text" id="editPhotoUrl" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-xs md:text-sm" disabled>
-                                </div>
+                                <div class="flex-1"><label class="block text-xs font-medium text-slate-400 mb-1">Photo URL</label><input type="text" id="editPhotoUrl" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-xs md:text-sm" disabled></div>
                             </div>
                             <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Full Name</label><input type="text" id="editFullName" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
                             <div><label class="block text-xs font-medium text-slate-400 mb-1">Mobile</label><input type="text" id="editMobile" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
                             <div><label class="block text-xs font-medium text-slate-400 mb-1">Password</label><input type="text" id="editPassword" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
                             <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Address</label><input type="text" id="editAddress" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
-                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Membership Plan</label><input type="text" id="editMembership" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Membership</label><input type="text" id="editMembership" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
                             <div><label class="block text-xs font-medium text-slate-400 mb-1">Reg Time</label><input type="text" id="editRegTime" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-slate-300 text-xs" readonly></div>
-                            <div class="col-span-1 sm:col-span-2">
-                                <label class="block text-xs font-medium text-slate-400 mb-1">ID Proof URL</label>
-                                <div class="flex space-x-2">
-                                    <input type="text" id="editIdProofUrl" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-slate-300 text-xs" disabled>
-                                    <a id="btnViewId" href="#" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-center">View</a>
-                                </div>
-                            </div>
                         </div>
                     </div>
                     <div class="space-y-4 mt-4 lg:mt-0">
@@ -324,26 +338,15 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Account Status</label>
-                                <select id="adminAccountStatus" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white text-sm" disabled>
-                                    <option value="Approved">Approved</option><option value="Pending">Pending</option><option value="Rejected">Rejected</option>
-                                </select>
+                                <select id="adminAccountStatus" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white text-sm" disabled><option value="Approved">Approved</option><option value="Pending">Pending</option><option value="Rejected">Rejected</option></select>
                             </div>
                             <div><label class="block text-xs font-medium text-slate-400 mb-1">Seat Number</label><input type="text" id="adminSeatNumber" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
                             <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Valid Till Date</label><input type="text" id="adminValidTill" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
-                            
-                            <!-- Computed Fee Status & Last Paid Month (Read-only UI) -->
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status (Auto)</label>
-                                <input type="text" id="displayFeeStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-emerald-400 font-bold text-sm" disabled>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month (From Payments)</label>
-                                <input type="text" id="displayLastPaid" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-amber-400 font-bold text-sm" disabled>
-                            </div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Fee Status (Auto)</label><input type="text" id="displayFeeStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-emerald-400 font-bold text-sm" disabled></div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month</label><input type="text" id="displayLastPaid" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-amber-400 font-bold text-sm" disabled></div>
                         </div>
                     </div>
                 </div>
-
                 <div class="px-4 py-4 md:px-8 md:py-5 border-t border-slate-700 bg-slate-800/50 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
                     <button id="toggleEditModeBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-medium text-sm flex items-center justify-center">
                         <span class="mr-2">✏️</span> Enable Edit Mode
@@ -357,6 +360,55 @@
                 </div>
             </div>
         </div>
+
+        <!-- NEW: ADD PAYMENT MODAL -->
+        <div id="paymentModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+            <div class="glass-card rounded-2xl w-full max-w-md border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+                <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/90 rounded-t-2xl">
+                    <h2 class="text-lg font-bold text-white flex items-center"><span class="text-emerald-400 mr-2">💳</span> Collect Fee</h2>
+                    <button id="closePaymentModalBtn" class="text-slate-400 hover:text-red-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+                <div class="p-6">
+                    <div class="mb-6 bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                        <p class="text-xs text-slate-400 mb-1">Student</p>
+                        <h3 id="payStudentName" class="text-lg font-bold text-white mb-2">--</h3>
+                        <div class="flex justify-between text-xs">
+                            <span class="text-red-400">Expired: <span id="payOldExpiry" class="font-bold">--</span></span>
+                        </div>
+                    </div>
+                    
+                    <form id="paymentForm" class="space-y-4">
+                        <input type="hidden" id="payStudentKey">
+                        
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Amount Received (₹)*</label>
+                            <input type="number" id="payAmount" required class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-sm" placeholder="e.g., 500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Payment Month/Year (Folder Name)*</label>
+                            <input type="text" id="payMonthFolder" required class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:border-emerald-500 text-sm" placeholder="e.g., September 2026">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Date To Date (d2d)*</label>
+                                <input type="text" id="payD2D" required class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white focus:border-emerald-500 text-sm" placeholder="e.g., 01 Sep - 30 Sep">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Extend Valid Till To*</label>
+                                <input type="text" id="payNewValidTill" required class="w-full bg-slate-900 border border-emerald-500/50 rounded-lg px-3 py-2.5 text-emerald-400 font-bold focus:border-emerald-500 text-sm" placeholder="e.g., 30 September 2026">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnSubmitPayment" class="w-full mt-4 px-4 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                            Confirm Payment & Renew
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script>
@@ -373,7 +425,7 @@
             'nav-all-students': { id: 'view-all-students', title: 'All <span class="text-cyan-400 font-light">Students</span>', name: "Students Directory" },
             'nav-manual-entry': { id: 'view-manual-entry', title: 'Manual <span class="text-cyan-400 font-light">Entry</span>', name: "Student Manual Entry Form" },
             'nav-seats': { id: 'view-seats', title: 'Seat <span class="text-cyan-400 font-light">Matrix</span>', name: "Visual Seat Layout" },
-            'nav-fees': { id: 'view-placeholder', title: 'Fees <span class="text-cyan-400 font-light">Management</span>', name: "Fees & Payment Engine" },
+            'nav-fees': { id: 'view-fees', title: 'Fees <span class="text-cyan-400 font-light">Management</span>', name: "Fees & Payment Engine" },
             'nav-qr': { id: 'view-placeholder', title: 'QR <span class="text-cyan-400 font-light">Manager</span>', name: "QR Generator" },
             'nav-notices': { id: 'view-placeholder', title: 'Push <span class="text-cyan-400 font-light">Notices</span>', name: "Notification System" }
         };
@@ -396,9 +448,6 @@
         }
 
         Object.keys(views).forEach(navId => { document.getElementById(navId)?.addEventListener('click', () => switchView(navId)); });
-        document.getElementById('btnViewAllStudents')?.addEventListener('click', () => switchView('nav-all-students'));
-        document.getElementById('btnQuickAdd')?.addEventListener('click', () => switchView('nav-manual-entry'));
-        document.getElementById('btnQuickSeat')?.addEventListener('click', () => switchView('nav-seats'));
     </script>
     <script type="module" src="./js/dashboard.js"></script>
 </body>

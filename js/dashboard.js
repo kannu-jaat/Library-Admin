@@ -2,9 +2,6 @@ import { db, auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { ref, onValue, update, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// ==========================================
-// 1. AUTHENTICATION
-// ==========================================
 onAuthStateChanged(auth, (user) => {
     if (user) {
         document.getElementById('adminEmailDisplay').innerText = user.email;
@@ -15,9 +12,6 @@ onAuthStateChanged(auth, (user) => {
 });
 document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
-// ==========================================
-// 2. ALL DOM ELEMENTS (Locked at top to prevent crash)
-// ==========================================
 const statTotalStudents = document.getElementById('statTotalStudents');
 const statPresentToday = document.getElementById('statPresentToday');
 const statPendingFees = document.getElementById('statPendingFees');
@@ -30,16 +24,15 @@ const pendingApprovalsTable = document.getElementById('pendingApprovalsTable');
 const allStudentsTable = document.getElementById('allStudentsTable');
 const profileModal = document.getElementById('profileModal');
 
-// Seat Matrix Elements
 const seatSearchQuery = document.getElementById('seatSearchQuery');
 const seatFilterStatus = document.getElementById('seatFilterStatus');
 const seatGrid = document.getElementById('seatGrid');
 const countOccupiedSeats = document.getElementById('countOccupiedSeats');
 const countEmptySeats = document.getElementById('countEmptySeats');
 
-// ==========================================
-// 3. DATES & GLOBAL VARIABLES
-// ==========================================
+const toggleEditModeBtn = document.getElementById('toggleEditModeBtn');
+const saveProfileBtn = document.getElementById('saveProfileBtn');
+
 const today = new Date();
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const date = today.getDate();
@@ -62,34 +55,53 @@ function parseRegDate(dateStr) {
     } catch(e) { return new Date(0); }
 }
 
-// ==========================================
-// 4. CACHE MANAGER & SEAT RENDER ENGINE
-// ==========================================
+// 🔥 NUMBER-WISE SORTED SEAT MATRIX ENGINE (1 to Total Seats)
 function renderSeatMap() {
     if(!seatSearchQuery || !seatFilterStatus) return;
     
     const query = seatSearchQuery.value.toLowerCase();
     const status = seatFilterStatus.value;
     
-    let occupiedSeatsList = [];
-    let emptyCount = globalTotalSeats;
+    let seatMap = {};
+    let occupiedCount = 0;
 
     for (let key in allStudentsDict) {
         const student = allStudentsDict[key];
         if (student.status === "Approved" && student.seatNumber && student.seatNumber.trim() !== "") {
-            occupiedSeatsList.push({
-                type: 'occupied', seat: student.seatNumber.trim(), name: student.fullName || key,
+            seatMap[student.seatNumber.trim().toLowerCase()] = {
+                seatNum: student.seatNumber.trim(),
+                name: student.fullName || key,
                 photo: student.photoUrl || `https://ui-avatars.com/api/?name=${student.fullName || 'User'}&background=0D8ABC&color=fff`,
                 key: key
-            });
-            emptyCount--;
+            };
         }
     }
-    if(emptyCount < 0) emptyCount = 0;
 
-    let allSeats = [...occupiedSeatsList];
-    for(let i=0; i<emptyCount; i++) {
-        allSeats.push({ type: 'empty', seat: `Free Seat`, name: 'Available', photo: null, key: null });
+    let allSeats = [];
+    let emptyCount = 0;
+
+    // Generate seats 1 to globalTotalSeats in strict numerical order
+    for (let i = 1; i <= globalTotalSeats; i++) {
+        let seatStr = i.toString();
+        let occupant = seatMap[seatStr.toLowerCase()];
+
+        if (occupant) {
+            allSeats.push({ type: 'occupied', seat: occupant.seatNum, name: occupant.name, photo: occupant.photo, key: occupant.key });
+            occupiedCount++;
+        } else {
+            allSeats.push({ type: 'empty', seat: seatStr, name: 'Available', photo: null, key: null });
+            emptyCount++;
+        }
+    }
+
+    // Also check if any student has a custom seat number not in 1..N range
+    for (let key in seatMap) {
+        let occ = seatMap[key];
+        let exists = allSeats.some(s => s.seat.toLowerCase() === occ.seatNum.toLowerCase());
+        if(!exists) {
+            allSeats.push({ type: 'occupied', seat: occ.seatNum, name: occ.name, photo: occ.photo, key: occ.key });
+            occupiedCount++;
+        }
     }
 
     let filtered = allSeats.filter(s => {
@@ -109,22 +121,22 @@ function renderSeatMap() {
             html += `
             <div class="glass-card bg-slate-800/80 border-t-4 border-t-red-500 rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-700 transition-colors btn-open-profile shadow-[0_4px_10px_rgba(239,68,68,0.15)]" data-key="${s.key}" title="Click to view profile">
                 <img src="${s.photo}" class="w-12 h-12 rounded-full border-2 border-red-500/50 mb-2 object-cover">
-                <h4 class="text-white font-bold text-sm w-full truncate">${s.seat}</h4>
+                <h4 class="text-white font-bold text-sm w-full truncate">Seat #${s.seat}</h4>
                 <p class="text-xs text-slate-400 w-full truncate">${s.name}</p>
             </div>`;
         } else {
             html += `
             <div class="glass-card bg-slate-800/40 border-t-4 border-t-emerald-500 rounded-xl p-3 flex flex-col items-center justify-center text-center border-dashed border-slate-600">
-                <div class="w-12 h-12 rounded-full border-2 border-emerald-500/30 mb-2 flex items-center justify-center bg-emerald-900/20"><span class="text-xl">🪑</span></div>
-                <h4 class="text-emerald-400 font-bold text-sm truncate">Empty</h4>
-                <p class="text-[10px] text-slate-500">Available</p>
+                <div class="w-10 h-10 rounded-full border-2 border-emerald-500/30 mb-1 flex items-center justify-center bg-emerald-900/20"><span class="text-xs text-emerald-400 font-bold">${s.seat}</span></div>
+                <h4 class="text-emerald-400 font-bold text-xs truncate">Empty</h4>
+                <p class="text-[9px] text-slate-500">Available</p>
             </div>`;
         }
     });
 
     seatGrid.innerHTML = html !== '' ? html : `<div class="col-span-full text-center text-slate-500 py-10">No seats match your search.</div>`;
-    countOccupiedSeats.innerText = occupiedSeatsList.length;
-    countEmptySeats.innerText = emptyCount;
+    countOccupiedSeats.innerText = occupiedCount;
+    countEmptySeats.innerText = globalTotalSeats - occupiedCount >= 0 ? globalTotalSeats - occupiedCount : emptyCount;
 }
 
 seatSearchQuery.addEventListener('input', renderSeatMap);
@@ -148,9 +160,6 @@ function loadCachedDashboard() {
 }
 loadCachedDashboard();
 
-// ==========================================
-// 5. FIREBASE REALTIME FETCHERS
-// ==========================================
 onValue(ref(db, 'totalSeat'), (snapshot) => {
     if (snapshot.exists()) {
         globalTotalSeats = snapshot.val();
@@ -216,7 +225,6 @@ onValue(ref(db, 'Students'), (snapshot) => {
             }
         });
 
-        // SORTING RECENT STUDENTS
         activeStudentsList.sort((a, b) => parseRegDate(b.registrationTime) - parseRegDate(a.registrationTime));
         
         let recentHTML = '';
@@ -270,64 +278,121 @@ onValue(ref(db, 'Attendance'), (snapshot) => {
 });
 
 // ==========================================
-// 6. PROFILE MODAL LOGIC
+// 6. PROFILE MODAL (View Mode Default + Edit Toggle)
 // ==========================================
+let isEditingMode = false;
+
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-open-profile');
-    if (btn) openProfileModal(btn.getAttribute('data-key'), btn.getAttribute('data-type') === 'approve');
+    if (btn) openProfileModal(btn.getAttribute('data-key'));
 });
 
-function openProfileModal(studentKey, isApprovalMode = false) {
+function openProfileModal(studentKey) {
     const student = allStudentsDict[studentKey];
     if(!student) return alert("Data not synced yet.");
+    
+    // Default to View Mode
+    isEditingMode = false;
+    setProfileInputsEditable(false);
+
     document.getElementById('modalStudentKey').value = studentKey;
-    document.getElementById('editFullName').value = student.fullName || ''; document.getElementById('editMobile').value = student.mobile || '';
-    document.getElementById('editPassword').value = student.password || ''; document.getElementById('editAddress').value = student.address || '';
-    document.getElementById('editMembership').value = student.membership || ''; document.getElementById('editRegTime').value = student.registrationTime || '';
-    document.getElementById('editPhotoUrl').value = student.photoUrl || ''; document.getElementById('editIdProofUrl').value = student.idProofUrl || '';
+    document.getElementById('editFullName').value = student.fullName || ''; 
+    document.getElementById('editMobile').value = student.mobile || '';
+    document.getElementById('editPassword').value = student.password || ''; 
+    document.getElementById('editAddress').value = student.address || '';
+    document.getElementById('editMembership').value = student.membership || ''; 
+    document.getElementById('editRegTime').value = student.registrationTime || '';
+    document.getElementById('editPhotoUrl').value = student.photoUrl || ''; 
+    document.getElementById('editIdProofUrl').value = student.idProofUrl || '';
     document.getElementById('modalPhotoPreview').src = student.photoUrl || `https://ui-avatars.com/api/?name=${student.fullName || 'User'}&background=0D8ABC&color=fff`;
     
     const idBtn = document.getElementById('btnViewId');
     if (student.idProofUrl) { idBtn.href = student.idProofUrl; idBtn.classList.remove('opacity-50', 'pointer-events-none'); } 
     else { idBtn.href = '#'; idBtn.classList.add('opacity-50', 'pointer-events-none'); }
     
-    if (isApprovalMode) {
-        document.getElementById('modalMainTitle').innerText = "Review & Approve Student"; document.getElementById('modalIcon').innerText = "⚡"; document.getElementById('saveProfileIcon').innerText = "✅"; document.getElementById('saveProfileText').innerText = "Approve & Save"; document.getElementById('adminAccountStatus').value = 'Approved'; 
-        document.getElementById('adminSeatNumber').value = student.seatNumber || ''; document.getElementById('adminValidTill').value = student.validTill || `30 ${monthStr} ${year}`; 
-        document.getElementById('adminFeeStatus').value = student.feeStatus || 'Paid'; document.getElementById('adminDueAmount').value = student.dueAmount || '0'; document.getElementById('adminLastPaid').value = student.lastPaidMonth || `${monthStr} ${year}`;
-    } else {
-        document.getElementById('modalMainTitle').innerText = "Edit Student Profile"; document.getElementById('modalIcon').innerText = "✏️"; document.getElementById('saveProfileIcon').innerText = "💾"; document.getElementById('saveProfileText').innerText = "Update Profile";
-        document.getElementById('adminAccountStatus').value = student.status || 'Approved'; document.getElementById('adminSeatNumber').value = student.seatNumber || ''; document.getElementById('adminValidTill').value = student.validTill || ''; 
-        document.getElementById('adminFeeStatus').value = student.feeStatus || 'Paid'; document.getElementById('adminDueAmount').value = student.dueAmount || '0'; document.getElementById('adminLastPaid').value = student.lastPaidMonth || '';
-    }
+    document.getElementById('adminAccountStatus').value = student.status || 'Approved'; 
+    document.getElementById('adminSeatNumber').value = student.seatNumber || '';
+    document.getElementById('adminValidTill').value = student.validTill || ''; 
+    document.getElementById('adminFeeStatus').value = student.feeStatus || 'Paid';
+    document.getElementById('adminDueAmount').value = student.dueAmount || '0';
+    document.getElementById('adminLastPaid').value = student.lastPaidMonth || '';
+
+    document.getElementById('modalMainTitle').innerText = "Student Profile (View Mode)";
+    document.getElementById('modalIcon').innerText = "👁️";
+    toggleEditModeBtn.innerHTML = `<span class="mr-2">✏️</span> Enable Edit Mode`;
+    saveProfileBtn.classList.add('hidden');
+
     profileModal.classList.remove('hidden');
 }
 
-const closeModal = () => profileModal.classList.add('hidden');
-document.getElementById('closeProfileModalBtn').addEventListener('click', closeModal); document.getElementById('cancelProfileBtn').addEventListener('click', closeModal);
+function setProfileInputsEditable(enable) {
+    const inputs = document.querySelectorAll('.profile-input');
+    inputs.forEach(input => {
+        input.disabled = !enable;
+    });
+}
 
-document.getElementById('saveProfileBtn').addEventListener('click', async () => {
-    const studentKey = document.getElementById('modalStudentKey').value; const btn = document.getElementById('saveProfileBtn'); const originalText = document.getElementById('saveProfileText').innerText;
+// Toggle Edit Mode inside Profile Modal
+toggleEditModeBtn.addEventListener('click', () => {
+    isEditingMode = !isEditingMode;
+    setProfileInputsEditable(isEditingMode);
+
+    if(isEditingMode) {
+        document.getElementById('modalMainTitle').innerText = "Edit Student Profile";
+        document.getElementById('modalIcon').innerText = "✏️";
+        toggleEditModeBtn.innerHTML = `<span class="mr-2">🔒</span> Lock / View Mode`;
+        saveProfileBtn.classList.remove('hidden');
+    } else {
+        document.getElementById('modalMainTitle').innerText = "Student Profile (View Mode)";
+        document.getElementById('modalIcon').innerText = "👁️";
+        toggleEditModeBtn.innerHTML = `<span class="mr-2">✏️</span> Enable Edit Mode`;
+        saveProfileBtn.classList.add('hidden');
+    }
+});
+
+const closeModal = () => profileModal.classList.add('hidden');
+document.getElementById('closeProfileModalBtn').addEventListener('click', closeModal); 
+document.getElementById('cancelProfileBtn').addEventListener('click', closeModal);
+
+saveProfileBtn.addEventListener('click', async () => {
+    const studentKey = document.getElementById('modalStudentKey').value; 
+    const btn = document.getElementById('saveProfileBtn');
+    
     const updates = {
-        fullName: document.getElementById('editFullName').value.trim(), mobile: document.getElementById('editMobile').value.trim(),
-        password: document.getElementById('editPassword').value.trim(), address: document.getElementById('editAddress').value.trim(),
-        membership: document.getElementById('editMembership').value.trim(), photoUrl: document.getElementById('editPhotoUrl').value.trim(),
-        idProofUrl: document.getElementById('editIdProofUrl').value.trim(), status: document.getElementById('adminAccountStatus').value,
-        seatNumber: document.getElementById('adminSeatNumber').value.trim(), validTill: document.getElementById('adminValidTill').value.trim(),
-        feeStatus: document.getElementById('adminFeeStatus').value, dueAmount: parseInt(document.getElementById('adminDueAmount').value) || 0,
+        fullName: document.getElementById('editFullName').value.trim(), 
+        mobile: document.getElementById('editMobile').value.trim(),
+        password: document.getElementById('editPassword').value.trim(), 
+        address: document.getElementById('editAddress').value.trim(),
+        membership: document.getElementById('editMembership').value.trim(), 
+        photoUrl: document.getElementById('editPhotoUrl').value.trim(),
+        idProofUrl: document.getElementById('editIdProofUrl').value.trim(), 
+        status: document.getElementById('adminAccountStatus').value,
+        seatNumber: document.getElementById('adminSeatNumber').value.trim(), 
+        validTill: document.getElementById('adminValidTill').value.trim(),
+        feeStatus: document.getElementById('adminFeeStatus').value, 
+        dueAmount: parseInt(document.getElementById('adminDueAmount').value) || 0,
         lastPaidMonth: document.getElementById('adminLastPaid').value.trim()
     };
+
     if (updates.status === "Approved" && (!updates.seatNumber || !updates.validTill)) return alert("Please allot a Seat Number and Valid Till date.");
+
     try {
-        btn.innerHTML = `<span class="mr-2">⏳</span> Saving...`; btn.disabled = true;
+        btn.innerHTML = `<span class="mr-2">⏳</span> Saving...`; 
+        btn.disabled = true;
         await update(ref(db, `Students/${studentKey}`), updates);
+        alert(`Success! Profile updated.`);
         closeModal();
-    } catch (error) { alert("Something went wrong!"); } 
-    finally { btn.innerHTML = `<span class="mr-2" id="saveProfileIcon">✅</span> <span id="saveProfileText">${originalText}</span>`; btn.disabled = false; }
+    } catch (error) { 
+        alert("Something went wrong!"); 
+    } finally { 
+        btn.innerHTML = `<span class="mr-2">✅</span> Save Changes`; 
+        btn.disabled = false; 
+    }
 });
 
 document.getElementById('searchAllStudents').addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase(); const rows = allStudentsTable.getElementsByTagName('tr');
+    const query = e.target.value.toLowerCase(); 
+    const rows = allStudentsTable.getElementsByTagName('tr');
     for (let row of rows) { row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none'; }
 });
 

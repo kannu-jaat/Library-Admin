@@ -439,5 +439,17 @@
     </script>
     
     <script type="module" src="./js/dashboard.js"></script>
+
+    <!-- Service Worker Registration for App Install -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then((reg) => console.log('App ready for home screen.', reg.scope))
+                .catch((err) => console.log('Service worker failed:', err));
+            });
+        }
+    </script>
+
 </body>
 </html>

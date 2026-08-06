@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Library System</title>
-
+    
     <!-- PWA & Mobile App Setup -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#0f172a">
-    
-    <!-- iOS Support (iPhone me full screen ke liye) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AdminPro">
@@ -39,13 +37,11 @@
 </head>
 <body class="bg-slate-900 text-slate-200 h-screen flex overflow-hidden font-sans relative">
 
-    <!-- Mobile Sidebar Backdrop -->
     <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/80 z-30 hidden backdrop-blur-sm md:hidden transition-opacity"></div>
 
-    <!-- SIDEBAR (Mobile Slide-in & Desktop Fixed) -->
+    <!-- SIDEBAR -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-slate-800 flex flex-col justify-between border-r border-slate-700 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none">
         <div>
-            <!-- Admin Logo & Mobile Close Btn -->
             <div class="h-20 flex items-center justify-between md:justify-center px-6 md:px-0 border-b border-slate-700 bg-slate-900/50">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 rounded-full border border-amber-500 flex items-center justify-center bg-black shadow-[0_0_10px_rgba(249,115,22,0.5)]">
@@ -58,7 +54,6 @@
                 </button>
             </div>
 
-            <!-- Navigation Links -->
             <nav class="mt-4 flex flex-col space-y-1 overflow-y-auto max-h-[calc(100vh-160px)]">
                 <a id="nav-dashboard" class="nav-item active flex items-center px-6 py-3 text-cyan-400 bg-slate-800/50">
                     <span class="text-xl mr-3">📊</span> Dashboard Overview
@@ -103,7 +98,6 @@
         <div class="absolute inset-0 bg-slate-900/80 z-0"></div>
 
         <div class="relative z-10 flex flex-col h-full w-full">
-            <!-- Header with Hamburger Menu for Mobile -->
             <header class="h-20 flex items-center justify-between px-4 md:px-8 border-b border-slate-700/50 glass-card rounded-none">
                 <div class="flex items-center space-x-4">
                     <button id="mobileMenuBtn" class="md:hidden text-slate-300 hover:text-cyan-400 transition-colors">
@@ -111,15 +105,15 @@
                     </button>
                     <h1 id="headerTitle" class="text-lg md:text-2xl font-bold text-white tracking-wide truncate">Dashboard <span class="text-cyan-400 font-light">Overview</span></h1>
                 </div>
+                <!-- 🔥 DYNAMIC AVATAR UPDATED HERE -->
                 <div class="flex items-center space-x-3 md:space-x-4">
                     <span class="text-xs md:text-sm text-slate-400 hidden sm:block" id="adminEmailDisplay">loading...</span>
-                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-800 border-2 border-cyan-500 flex items-center justify-center flex-shrink-0">
-                        <span class="text-cyan-400 font-bold text-sm md:text-base">A</span>
+                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-slate-800 border-2 border-cyan-500 flex items-center justify-center flex-shrink-0 shadow-[0_0_8px_rgba(0,255,255,0.4)]">
+                        <span id="adminAvatarLetter" class="text-cyan-400 font-bold text-sm md:text-base">?</span>
                     </div>
                 </div>
             </header>
 
-            <!-- SPA CONTAINER -->
             <div class="flex-1 overflow-y-auto p-4 md:p-8 relative w-full">
                 
                 <!-- VIEW 1: DASHBOARD -->
@@ -175,7 +169,7 @@
                         <div class="glass-card rounded-xl p-4 md:p-6 w-full">
                             <h2 class="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 border-b border-slate-700/50 pb-4">Quick Actions</h2>
                             <div class="space-y-3 md:space-y-4">
-                                <button id="btnQuickAdd" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base">
+                                <button id="btnQuickAdd" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base shadow-[0_0_10px_rgba(8,145,178,0.4)]">
                                     <span class="text-lg mr-2">📝</span> Add Manual Entry
                                 </button>
                                 <button id="btnQuickQR" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base">
@@ -212,7 +206,7 @@
                     </div>
                 </div>
 
-                <!-- VIEW 3: ALL STUDENTS (NEW MODULE) -->
+                <!-- VIEW 3: ALL STUDENTS -->
                 <div id="view-all-students" class="view-section hidden w-full">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700/50 pb-4 space-y-4 md:space-y-0">
                         <h2 class="text-xl md:text-2xl font-bold text-white">All <span class="text-cyan-400 font-light">Students</span></h2>
@@ -239,6 +233,88 @@
                     </div>
                 </div>
 
+                <!-- 🔥 VIEW 4: MANUAL ENTRY FORM -->
+                <div id="view-manual-entry" class="view-section hidden w-full">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Add <span class="text-cyan-400 font-light">Manual Entry</span></h2>
+                    
+                    <div class="glass-card rounded-xl p-4 md:p-8 w-full max-w-4xl mx-auto">
+                        <form id="manualEntryForm" class="space-y-8">
+                            
+                            <!-- Section 1: Unique ID -->
+                            <div>
+                                <h3 class="text-sm font-bold text-cyan-500 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">1. System Identity</h3>
+                                <div class="relative">
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Username (No spaces allowed)*</label>
+                                    <input type="text" id="manualUsername" required pattern="^\S+$" title="No spaces allowed" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm" placeholder="e.g., rahul123">
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Personal Details -->
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">2. Personal Details</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-400 mb-1">Full Name*</label>
+                                        <input type="text" id="manualFullName" required class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-400 mb-1">Mobile Number*</label>
+                                        <input type="tel" id="manualMobile" required class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-400 mb-1">Password</label>
+                                        <input type="text" id="manualPassword" value="123456" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-slate-300 focus:outline-none focus:border-cyan-500 transition-all text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-400 mb-1">Membership Plan</label>
+                                        <input type="text" id="manualMembership" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all text-sm" placeholder="e.g., Full Day">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-xs font-medium text-slate-400 mb-1">Address</label>
+                                        <input type="text" id="manualAddress" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all text-sm">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Library Allotment -->
+                            <div>
+                                <h3 class="text-sm font-bold text-emerald-500 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">3. Library Allotment & Fees</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-400 mb-1">Seat Number</label>
+                                        <input type="text" id="manualSeat" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all text-sm" placeholder="e.g., K03">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-400 mb-1">Valid Till Date</label>
+                                        <input type="text" id="manualValidTill" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all text-sm" placeholder="e.g., 30 August 2026">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status</label>
+                                        <select id="manualFeeStatus" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all appearance-none text-sm">
+                                            <option value="Paid">Paid</option>
+                                            <option value="Unpaid">Unpaid</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-400 mb-1">Due Amount (₹)</label>
+                                        <input type="number" id="manualDueAmount" value="0" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all text-sm">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month</label>
+                                        <input type="text" id="manualLastPaid" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all text-sm" placeholder="e.g., August 2026">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-4 flex justify-end">
+                                <button type="submit" id="btnSaveManualEntry" class="w-full sm:w-auto px-8 py-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(8,145,178,0.4)] transition-all font-bold flex items-center justify-center">
+                                    <span class="mr-2" id="iconSaveManual">💾</span> <span id="textSaveManual">Save Student Direct to System</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- DUMMY SECTION FOR OTHERS -->
                 <div id="view-placeholder" class="view-section hidden glass-card rounded-xl p-6 md:p-10 text-center w-full">
                     <span class="text-5xl md:text-6xl mb-4 block">🚧</span>
@@ -249,11 +325,10 @@
             </div>
         </div>
 
-        <!-- 🚀 REUSABLE PROFILE / APPROVAL MODAL -->
-        <!-- Works for both Pending Approvals & Editing Active Students -->
+        <!-- REUSABLE PROFILE MODAL -->
         <div id="profileModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm transition-opacity">
             <div class="glass-card rounded-xl md:rounded-2xl w-full max-w-5xl max-h-[95vh] overflow-y-auto border border-cyan-500/30 shadow-[0_0_30px_rgba(0,255,255,0.15)]">
-                
+                <!-- Keep existing Profile Modal code exactly as before, it doesn't need changes -->
                 <div class="px-4 py-4 md:px-8 md:py-5 border-b border-slate-700 flex justify-between items-center sticky top-0 bg-slate-800/90 backdrop-blur-md z-10">
                     <h2 class="text-lg md:text-xl font-bold text-white flex items-center"><span class="text-cyan-400 mr-2" id="modalIcon">⚡</span> <span id="modalMainTitle">Review Student Data</span></h2>
                     <button id="closeProfileModalBtn" class="text-slate-400 hover:text-red-400 transition-colors">
@@ -262,108 +337,89 @@
                 </div>
 
                 <div class="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
-                    <!-- LEFT: Personal Details (Blue Borders) -->
                     <div class="space-y-4">
                         <h3 class="text-xs md:text-sm font-bold text-blue-400 uppercase tracking-wider mb-2 md:mb-4 border-b border-slate-700 pb-2">Student Provided Details</h3>
                         <input type="hidden" id="modalStudentKey">
-
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="col-span-1 sm:col-span-2 flex items-center space-x-4 mb-2">
-                                <img id="modalPhotoPreview" src="" class="w-14 h-14 md:w-16 md:h-16 rounded-xl border-2 border-blue-500 object-cover shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                                <img id="modalPhotoPreview" src="" class="w-14 h-14 md:w-16 md:h-16 rounded-xl border-2 border-blue-500 object-cover">
                                 <div class="flex-1">
                                     <label class="block text-xs font-medium text-slate-400 mb-1">Photo URL</label>
-                                    <input type="text" id="editPhotoUrl" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-xs md:text-sm">
+                                    <input type="text" id="editPhotoUrl" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-xs md:text-sm">
                                 </div>
                             </div>
-
                             <div class="col-span-1 sm:col-span-2">
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Full Name</label>
-                                <input type="text" id="editFullName" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+                                <input type="text" id="editFullName" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm">
                             </div>
-
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Mobile</label>
-                                <input type="text" id="editMobile" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+                                <input type="text" id="editMobile" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm">
                             </div>
-
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Password</label>
-                                <input type="text" id="editPassword" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+                                <input type="text" id="editPassword" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm">
                             </div>
-
                             <div class="col-span-1 sm:col-span-2">
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Address</label>
-                                <input type="text" id="editAddress" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+                                <input type="text" id="editAddress" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm">
                             </div>
-
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Membership Plan</label>
-                                <input type="text" id="editMembership" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-sm">
+                                <input type="text" id="editMembership" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm">
                             </div>
-                            
                             <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Registration Time</label>
-                                <input type="text" id="editRegTime" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-xs" readonly>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Reg Time</label>
+                                <input type="text" id="editRegTime" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-slate-300 text-xs" readonly>
                             </div>
-
                             <div class="col-span-1 sm:col-span-2">
                                 <label class="block text-xs font-medium text-slate-400 mb-1">ID Proof URL</label>
                                 <div class="flex space-x-2">
-                                    <input type="text" id="editIdProofUrl" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all text-xs">
-                                    <a id="btnViewId" href="#" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-center whitespace-nowrap">View</a>
+                                    <input type="text" id="editIdProofUrl" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-slate-300 text-xs">
+                                    <a id="btnViewId" href="#" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-center">View</a>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- RIGHT: Admin Allotment -->
                     <div class="space-y-4 mt-4 lg:mt-0">
                         <h3 class="text-xs md:text-sm font-bold text-cyan-500 uppercase tracking-wider mb-2 md:mb-4 border-b border-slate-700 pb-2">Admin Library Settings</h3>
-                        
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Account Status</label>
-                                <select id="adminAccountStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all appearance-none text-sm">
-                                    <option value="Approved">Approved</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Rejected">Rejected</option>
+                                <select id="adminAccountStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white text-sm">
+                                    <option value="Approved">Approved</option><option value="Pending">Pending</option><option value="Rejected">Rejected</option>
                                 </select>
                             </div>
-
                             <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Allot Seat Number</label>
-                                <input type="text" id="adminSeatNumber" placeholder="e.g., K03" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Seat Number</label>
+                                <input type="text" id="adminSeatNumber" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
                             </div>
-
                             <div class="col-span-1 sm:col-span-2">
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Valid Till Date</label>
-                                <input type="text" id="adminValidTill" placeholder="e.g., 30 August 2026" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm">
+                                <input type="text" id="adminValidTill" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
                             </div>
-
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status</label>
-                                <select id="adminFeeStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all appearance-none text-sm">
-                                    <option value="Paid">Paid</option>
-                                    <option value="Unpaid">Unpaid</option>
+                                <select id="adminFeeStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white text-sm">
+                                    <option value="Paid">Paid</option><option value="Unpaid">Unpaid</option>
                                 </select>
                             </div>
-
                             <div>
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Due Amount (₹)</label>
-                                <input type="number" id="adminDueAmount" value="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm">
+                                <input type="number" id="adminDueAmount" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
                             </div>
-
                             <div class="col-span-1 sm:col-span-2">
                                 <label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month</label>
-                                <input type="text" id="adminLastPaid" placeholder="e.g., August 2026" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm">
+                                <input type="text" id="adminLastPaid" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="px-4 py-4 md:px-8 md:py-5 border-t border-slate-700 bg-slate-800/50 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
-                    <button id="cancelProfileBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 transition-colors font-medium text-sm">Cancel</button>
-                    <button id="saveProfileBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(8,145,178,0.4)] transition-all font-medium flex items-center justify-center text-sm">
+                    <button id="cancelProfileBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 font-medium text-sm">Cancel</button>
+                    <button id="saveProfileBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(8,145,178,0.4)] font-medium flex items-center justify-center text-sm">
                         <span class="mr-2" id="saveProfileIcon">✅</span> <span id="saveProfileText">Save & Update</span>
                     </button>
                 </div>
@@ -371,29 +427,23 @@
         </div>
     </main>
 
-    <!-- UI Interactions (Sidebar & Router) -->
+    <!-- App Scripts -->
     <script>
-        // Sidebar Toggle Logic for Mobile
         const sidebar = document.getElementById('sidebar');
         const sidebarBackdrop = document.getElementById('sidebarBackdrop');
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
-
         function toggleSidebar() {
             sidebar.classList.toggle('-translate-x-full');
             sidebarBackdrop.classList.toggle('hidden');
         }
-
-        mobileMenuBtn.addEventListener('click', toggleSidebar);
-        closeSidebarBtn.addEventListener('click', toggleSidebar);
+        document.getElementById('mobileMenuBtn').addEventListener('click', toggleSidebar);
+        document.getElementById('closeSidebarBtn').addEventListener('click', toggleSidebar);
         sidebarBackdrop.addEventListener('click', toggleSidebar);
 
-        // SPA Router Logic
         const views = {
             'nav-dashboard': { id: 'view-dashboard', title: 'Dashboard <span class="text-cyan-400 font-light">Overview</span>' },
             'nav-approvals': { id: 'view-approvals', title: 'Pending <span class="text-amber-400 font-light">Approvals</span>', name: "Pending Approvals Module" },
             'nav-all-students': { id: 'view-all-students', title: 'All <span class="text-cyan-400 font-light">Students</span>', name: "Students Directory" },
-            'nav-manual-entry': { id: 'view-placeholder', title: 'Manual <span class="text-cyan-400 font-light">Entry</span>', name: "Student Manual Entry Form" },
+            'nav-manual-entry': { id: 'view-manual-entry', title: 'Manual <span class="text-cyan-400 font-light">Entry</span>', name: "Student Manual Entry Form" },
             'nav-seats': { id: 'view-placeholder', title: 'Seat <span class="text-cyan-400 font-light">Matrix</span>', name: "Visual Seat Layout" },
             'nav-fees': { id: 'view-placeholder', title: 'Fees <span class="text-cyan-400 font-light">Management</span>', name: "Fees & Payment Engine" },
             'nav-qr': { id: 'view-placeholder', title: 'QR <span class="text-cyan-400 font-light">Manager</span>', name: "QR Generator" },
@@ -410,20 +460,15 @@
                 activeNav.classList.add('active', 'text-cyan-400', 'bg-slate-800/50');
                 activeNav.classList.remove('text-slate-300');
             }
-
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             
             const target = views[navId];
             document.getElementById('headerTitle').innerHTML = target.title;
-            
-            const viewElement = document.getElementById(target.id);
-            viewElement.classList.remove('hidden');
+            document.getElementById(target.id).classList.remove('hidden');
             
             if(target.id === 'view-placeholder') {
                 document.getElementById('placeholderTitle').innerText = target.name + " Coming Soon";
             }
-            
-            // Close sidebar on mobile after clicking a link
             if(window.innerWidth < 768 && !sidebar.classList.contains('-translate-x-full')) {
                 toggleSidebar();
             }
@@ -433,25 +478,10 @@
             document.getElementById(navId)?.addEventListener('click', () => switchView(navId));
         });
 
-        // View All button linked to All Students
         document.getElementById('btnViewAllStudents')?.addEventListener('click', () => switchView('nav-all-students'));
         document.getElementById('btnQuickAdd')?.addEventListener('click', () => switchView('nav-manual-entry'));
     </script>
 
-    <!-- Auth Protection -->
-    <script type="module">
-        import { auth } from './js/firebase-config.js';
-        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        onAuthStateChanged(auth, (user) => {
-            if (user) document.getElementById('adminEmailDisplay').innerText = user.email;
-            else window.location.href = "index.html";
-        });
-        document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-    </script>
-    
-    <script type="module" src="./js/dashboard.js"></script>
-
-    <!-- Service Worker Registration for App Install -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -462,5 +492,21 @@
         }
     </script>
 
+    <script type="module">
+        import { auth } from './js/firebase-config.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('adminEmailDisplay').innerText = user.email;
+                // 🔥 DYNAMIC AVATAR LETTER LOGIC
+                document.getElementById('adminAvatarLetter').innerText = user.email.charAt(0).toUpperCase();
+            } else {
+                window.location.href = "index.html";
+            }
+        });
+        document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+    </script>
+    
+    <script type="module" src="./js/dashboard.js"></script>
 </body>
 </html>

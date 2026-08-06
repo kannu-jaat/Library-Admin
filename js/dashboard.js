@@ -2,6 +2,9 @@ import { db, auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { ref, onValue, update, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+// ==========================================
+// 1. AUTHENTICATION
+// ==========================================
 onAuthStateChanged(auth, (user) => {
     if (user) {
         document.getElementById('adminEmailDisplay').innerText = user.email;
@@ -12,6 +15,9 @@ onAuthStateChanged(auth, (user) => {
 });
 document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
+// ==========================================
+// 2. DOM ELEMENTS
+// ==========================================
 const statTotalStudents = document.getElementById('statTotalStudents');
 const statPresentToday = document.getElementById('statPresentToday');
 const statPendingFees = document.getElementById('statPendingFees');
@@ -22,6 +28,7 @@ const statTotalCapacity = document.getElementById('statTotalCapacity');
 const recentActivityTable = document.getElementById('recentActivityTable');
 const pendingApprovalsTable = document.getElementById('pendingApprovalsTable');
 const allStudentsTable = document.getElementById('allStudentsTable');
+const feesPendingTable = document.getElementById('feesPendingTable');
 const profileModal = document.getElementById('profileModal');
 
 const seatSearchQuery = document.getElementById('seatSearchQuery');
@@ -33,6 +40,9 @@ const countEmptySeats = document.getElementById('countEmptySeats');
 const toggleEditModeBtn = document.getElementById('toggleEditModeBtn');
 const saveProfileBtn = document.getElementById('saveProfileBtn');
 
+// ==========================================
+// 3. GLOBALS & HELPERS
+// ==========================================
 const today = new Date();
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const date = today.getDate();
@@ -56,42 +66,35 @@ function parseRegDate(dateStr) {
     } catch(e) { return new Date(0); }
 }
 
-// 🔥 Check if fee is Paid or Due based on validTill string (e.g., "30 August 2026")
 function checkFeeStatus(validTillStr) {
     if(!validTillStr) return "Due";
     try {
         const parts = validTillStr.trim().split(' ');
         if(parts.length < 3) return "Due";
         const day = parseInt(parts[0]);
-        const monthName = parts[1];
+        const monthIdx = months.indexOf(parts[1]);
         const yr = parseInt(parts[2]);
-        const monthIdx = months.indexOf(monthName);
         if(monthIdx === -1) return "Due";
 
         const validDate = new Date(yr, monthIdx, day, 23, 59, 59);
         return today <= validDate ? "Paid" : "Due";
-    } catch(e) {
-        return "Due";
-    }
+    } catch(e) { return "Due"; }
 }
 
-// 🔥 Get Latest Paid Month from Payments Node
 function getLatestPaidMonth(studentKey) {
     const studentPayments = allPaymentsDict[studentKey];
     if(!studentPayments) return "No Payment Record";
-    
     let monthsList = Object.keys(studentPayments);
     if(monthsList.length === 0) return "No Payment Record";
-
-    // Sort months descending based on Date value
     monthsList.sort((a, b) => new Date(b) - new Date(a));
-    return monthsList[0]; // Returns latest month like "August 2026"
+    return monthsList[0]; 
 }
 
-// 🔥 NUMBER-WISE SORTED SEAT MATRIX ENGINE (1 to Total Seats)
+// ==========================================
+// 4. CACHE & SEAT MATRIX
+// ==========================================
 function renderSeatMap() {
     if(!seatSearchQuery || !seatFilterStatus) return;
-    
     const query = seatSearchQuery.value.toLowerCase();
     const status = seatFilterStatus.value;
     
@@ -102,8 +105,7 @@ function renderSeatMap() {
         const student = allStudentsDict[key];
         if (student.status === "Approved" && student.seatNumber && student.seatNumber.trim() !== "") {
             seatMap[student.seatNumber.trim().toLowerCase()] = {
-                seatNum: student.seatNumber.trim(),
-                name: student.fullName || key,
+                seatNum: student.seatNumber.trim(), name: student.fullName || key,
                 photo: student.photoUrl || `https://ui-avatars.com/api/?name=${student.fullName || 'User'}&background=0D8ABC&color=fff`,
                 key: key
             };
@@ -116,7 +118,6 @@ function renderSeatMap() {
     for (let i = 1; i <= globalTotalSeats; i++) {
         let seatStr = i.toString();
         let occupant = seatMap[seatStr.toLowerCase()];
-
         if (occupant) {
             allSeats.push({ type: 'occupied', seat: occupant.seatNum, name: occupant.name, photo: occupant.photo, key: occupant.key });
             occupiedCount++;
@@ -126,14 +127,21 @@ function renderSeatMap() {
         }
     }
 
+    for (let key in seatMap) {
+        let occ = seatMap[key];
+        let exists = allSeats.some(s => s.seat.toLowerCase() === occ.seatNum.toLowerCase());
+        if(!exists) {
+            allSeats.push({ type: 'occupied', seat: occ.seatNum, name: occ.name, photo: occ.photo, key: occ.key });
+            occupiedCount++;
+        }
+    }
+
     let filtered = allSeats.filter(s => {
         let matchStatus = true;
         if(status === 'occupied' && s.type !== 'occupied') matchStatus = false;
         if(status === 'empty' && s.type !== 'empty') matchStatus = false;
-        
         let matchQuery = true;
         if(query !== '') matchQuery = s.seat.toLowerCase().includes(query) || s.name.toLowerCase().includes(query);
-        
         return matchStatus && matchQuery;
     });
 
@@ -177,12 +185,15 @@ function loadCachedDashboard() {
         if(cachedData.recentHTML) recentActivityTable.innerHTML = cachedData.recentHTML;
         if(cachedData.pendingHTML) pendingApprovalsTable.innerHTML = cachedData.pendingHTML;
         if(cachedData.allStudentsHTML) allStudentsTable.innerHTML = cachedData.allStudentsHTML;
+        if(cachedData.feesPendingHTML) feesPendingTable.innerHTML = cachedData.feesPendingHTML;
     }
     renderSeatMap(); 
 }
 loadCachedDashboard();
 
-// FETCH PAYMENTS DATA
+// ==========================================
+// 5. FIREBASE REALTIME SYNC
+// ==========================================
 onValue(ref(db, 'Payments'), (snapshot) => {
     if(snapshot.exists()) {
         allPaymentsDict = snapshot.val();
@@ -203,7 +214,7 @@ onValue(ref(db, 'totalSeat'), (snapshot) => {
 
 onValue(ref(db, 'Students'), (snapshot) => {
     let totalActive = 0, occupiedSeats = 0;
-    let pendingHTML = '', allHTML = '';
+    let pendingHTML = '', allHTML = '', feesPendingHTML = '';
     let activeStudentsList = [];
     let pendingFeeNames = [];
     
@@ -216,20 +227,28 @@ onValue(ref(db, 'Students'), (snapshot) => {
             allStudentsDict[studentKey] = student;
             
             const photo = student.photoUrl || `https://ui-avatars.com/api/?name=${student.fullName || 'User'}&background=0D8ABC&color=fff`;
-            
-            // Check fee status dynamically using validTill
             const currentFeeStatus = checkFeeStatus(student.validTill);
             let feeColor = currentFeeStatus === "Paid" ? "text-emerald-400" : "text-red-400 font-bold";
-            let feeText = currentFeeStatus === "Paid" ? "Paid" : "Due";
             
             if (currentFeeStatus === "Due" && student.status === "Approved") {
                 pendingFeeNames.push(student.fullName || studentKey);
+                // Populate Fees Management Table
+                feesPendingHTML += `
+                    <tr class="border-b border-slate-700/50 hover:bg-slate-800/40 transition-all">
+                        <td class="px-4 py-3 flex items-center">
+                            <img src="${photo}" class="w-8 h-8 md:w-10 md:h-10 rounded-full border border-red-500/50 mr-3 object-cover btn-open-profile cursor-pointer" data-key="${studentKey}">
+                            <div><div class="text-white font-medium text-xs md:text-sm">${student.fullName || studentKey}</div><div class="text-[10px] md:text-xs text-slate-500">${student.mobile || 'No Mobile'}</div></div>
+                        </td>
+                        <td class="px-4 py-3"><div class="text-cyan-400 font-bold text-xs md:text-sm">Seat: ${student.seatNumber || 'N/A'}</div><div class="text-[10px] md:text-xs text-slate-500">${student.membership || 'N/A'}</div></td>
+                        <td class="px-4 py-3 text-xs md:text-sm text-red-400 font-bold">${student.validTill || 'No Date'}</td>
+                        <td class="px-4 py-3"><button class="btn-collect-fee bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-[0_0_8px_rgba(16,185,129,0.4)]" data-key="${studentKey}">Collect Fee</button></td>
+                    </tr>`;
             }
 
             if (student.status === "Approved") {
                 totalActive++;
                 if (student.seatNumber && student.seatNumber.trim() !== "") occupiedSeats++;
-                activeStudentsList.push({ ...student, key: studentKey, photo, feeColor, feeText });
+                activeStudentsList.push({ ...student, key: studentKey, photo, feeColor, feeText: currentFeeStatus });
 
                 allHTML += `
                     <tr class="border-b border-slate-700/50 hover:bg-slate-800/40 transition-all">
@@ -238,7 +257,7 @@ onValue(ref(db, 'Students'), (snapshot) => {
                             <div><div class="text-white font-medium text-xs md:text-sm">${student.fullName || studentKey}</div><div class="text-[10px] md:text-xs text-slate-500">${student.mobile || 'No Mobile'}</div></div>
                         </td>
                         <td class="px-4 py-3 text-xs md:text-sm text-cyan-400 font-bold">${student.seatNumber || 'N/A'}</td>
-                        <td class="px-4 py-3 text-xs md:text-sm ${feeColor}">${feeText}</td>
+                        <td class="px-4 py-3 text-xs md:text-sm ${feeColor}">${currentFeeStatus}</td>
                         <td class="px-4 py-3 text-xs md:text-sm text-slate-300">${student.validTill || '--'}</td>
                         <td class="px-4 py-3"><button class="btn-open-profile bg-slate-700 hover:bg-cyan-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" data-key="${studentKey}">Profile</button></td>
                     </tr>`;
@@ -248,10 +267,10 @@ onValue(ref(db, 'Students'), (snapshot) => {
                 pendingHTML += `
                     <tr class="border-b border-slate-700/50 hover:bg-slate-800/40 transition-all">
                         <td class="px-4 py-3 flex items-center">
-                            <img src="${photo}" class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-amber-500 mr-3 object-cover shadow-[0_0_8px_rgba(245,158,11,0.4)] btn-open-profile cursor-pointer" data-key="${studentKey}" data-type="approve">
+                            <img src="${photo}" class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-amber-500 mr-3 object-cover shadow-[0_0_8px_rgba(245,158,11,0.4)] btn-open-profile cursor-pointer" data-key="${studentKey}">
                             <div><div class="text-white font-medium text-xs md:text-sm">${student.fullName || studentKey}</div><div class="text-[10px] md:text-xs text-slate-500">${studentKey}</div></div>
                         </td>
-                        <td class="px-4 py-3"><div class="text-slate-300 text-xs md:text-sm">${student.mobile || 'N/A'}</div><div class="text-[10px] md:text-xs text-slate-500 truncate w-24 md:w-32" title="${student.address || ''}">${student.address || 'N/A'}</div></td>
+                        <td class="px-4 py-3"><div class="text-slate-300 text-xs md:text-sm">${student.mobile || 'N/A'}</div><div class="text-[10px] md:text-xs text-slate-500 truncate w-24 md:w-32">${student.address || 'N/A'}</div></td>
                         <td class="px-4 py-3 text-amber-400 font-medium text-xs md:text-sm">${student.membership || 'N/A'}</td>
                         <td class="px-4 py-3"><button class="btn-open-profile bg-amber-600/20 text-amber-400 border border-amber-500/50 hover:bg-amber-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-all" data-key="${studentKey}" data-type="approve">Review</button></td>
                     </tr>`;
@@ -265,7 +284,7 @@ onValue(ref(db, 'Students'), (snapshot) => {
             recentHTML += `
                 <tr class="border-b border-slate-700/50 hover:bg-slate-800/40 transition-all">
                     <td class="px-4 py-3 flex items-center">
-                        <img src="${s.photo}" class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-slate-600 mr-3 object-cover btn-open-profile cursor-pointer" data-key="${s.key}" title="View Profile">
+                        <img src="${s.photo}" class="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-slate-600 mr-3 object-cover btn-open-profile cursor-pointer" data-key="${s.key}">
                         <div><div class="text-white font-medium text-xs md:text-sm">${s.fullName || s.key}</div><div class="text-[10px] md:text-xs text-slate-500">Seat: ${s.seatNumber || 'N/A'}</div></div>
                     </td>
                     <td class="px-4 py-3 text-xs md:text-sm ${s.feeColor}">${s.feeText}</td>
@@ -284,11 +303,12 @@ onValue(ref(db, 'Students'), (snapshot) => {
         recentActivityTable.innerHTML = recentHTML !== '' ? recentHTML : `<tr><td colspan="4" class="text-center py-8 text-slate-500">No active students.</td></tr>`;
         pendingApprovalsTable.innerHTML = pendingHTML !== '' ? pendingHTML : `<tr><td colspan="4" class="text-center py-8 text-slate-500">No pending approvals! 🎉</td></tr>`;
         allStudentsTable.innerHTML = allHTML !== '' ? allHTML : `<tr><td colspan="5" class="text-center py-8 text-slate-500">No active students found.</td></tr>`;
+        feesPendingTable.innerHTML = feesPendingHTML !== '' ? feesPendingHTML : `<tr><td colspan="4" class="text-center py-8 text-emerald-400 font-bold">All Fees Collected! 🎉</td></tr>`;
 
         let cache = JSON.parse(localStorage.getItem('adminDashboardCache')) || {};
         cache.totalActive = totalActive; cache.pendingFees = pendingFeeNames.length; cache.occupiedSeats = occupiedSeats;
         cache.pendingNamesStr = pendingNamesStr;
-        cache.recentHTML = recentHTML; cache.pendingHTML = pendingHTML; cache.allStudentsHTML = allHTML;
+        cache.recentHTML = recentHTML; cache.pendingHTML = pendingHTML; cache.allStudentsHTML = allHTML; cache.feesPendingHTML = feesPendingHTML;
         
         localStorage.setItem('adminDashboardCache', JSON.stringify(cache));
         localStorage.setItem('allStudentsDataCache', JSON.stringify(allStudentsDict));
@@ -311,16 +331,16 @@ onValue(ref(db, 'Attendance'), (snapshot) => {
 });
 
 // ==========================================
-// 6. PROFILE MODAL (View Mode Default + Edit Toggle)
+// 6. PROFILE MODAL LOGIC (View/Edit)
 // ==========================================
 let isEditingMode = false;
 
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-open-profile');
-    if (btn) openProfileModal(btn.getAttribute('data-key'));
+    if (btn) openProfileModal(btn.getAttribute('data-key'), btn.getAttribute('data-type') === 'approve');
 });
 
-function openProfileModal(studentKey) {
+function openProfileModal(studentKey, isApprovalMode = false) {
     const student = allStudentsDict[studentKey];
     if(!student) return alert("Data not synced yet.");
     
@@ -328,14 +348,9 @@ function openProfileModal(studentKey) {
     setProfileInputsEditable(false);
 
     document.getElementById('modalStudentKey').value = studentKey;
-    document.getElementById('editFullName').value = student.fullName || ''; 
-    document.getElementById('editMobile').value = student.mobile || '';
-    document.getElementById('editPassword').value = student.password || ''; 
-    document.getElementById('editAddress').value = student.address || '';
-    document.getElementById('editMembership').value = student.membership || ''; 
-    document.getElementById('editRegTime').value = student.registrationTime || '';
-    document.getElementById('editPhotoUrl').value = student.photoUrl || ''; 
-    document.getElementById('editIdProofUrl').value = student.idProofUrl || '';
+    document.getElementById('editFullName').value = student.fullName || ''; document.getElementById('editMobile').value = student.mobile || '';
+    document.getElementById('editPassword').value = student.password || ''; document.getElementById('editAddress').value = student.address || '';
+    document.getElementById('editMembership').value = student.membership || ''; document.getElementById('editRegTime').value = student.registrationTime || '';
     document.getElementById('modalPhotoPreview').src = student.photoUrl || `https://ui-avatars.com/api/?name=${student.fullName || 'User'}&background=0D8ABC&color=fff`;
     
     const idBtn = document.getElementById('btnViewId');
@@ -345,16 +360,20 @@ function openProfileModal(studentKey) {
     document.getElementById('adminAccountStatus').value = student.status || 'Approved'; 
     document.getElementById('adminSeatNumber').value = student.seatNumber || '';
     document.getElementById('adminValidTill').value = student.validTill || ''; 
-    
-    // Dynamic computed values for modal
     document.getElementById('displayFeeStatus').value = checkFeeStatus(student.validTill);
     document.getElementById('displayLastPaid').value = getLatestPaidMonth(studentKey);
 
-    document.getElementById('modalMainTitle').innerText = "Student Profile (View Mode)";
-    document.getElementById('modalIcon').innerText = "👁️";
-    toggleEditModeBtn.innerHTML = `<span class="mr-2">✏️</span> Enable Edit Mode`;
-    saveProfileBtn.classList.add('hidden');
-
+    if(isApprovalMode) {
+        document.getElementById('modalMainTitle').innerText = "Review & Approve Student";
+        document.getElementById('modalIcon').innerText = "⚡";
+        toggleEditModeBtn.innerHTML = `<span class="mr-2">✏️</span> Enable Edit Mode`;
+        saveProfileBtn.classList.add('hidden');
+    } else {
+        document.getElementById('modalMainTitle').innerText = "Student Profile (View Mode)";
+        document.getElementById('modalIcon').innerText = "👁️";
+        toggleEditModeBtn.innerHTML = `<span class="mr-2">✏️</span> Enable Edit Mode`;
+        saveProfileBtn.classList.add('hidden');
+    }
     profileModal.classList.remove('hidden');
 }
 
@@ -380,54 +399,107 @@ toggleEditModeBtn.addEventListener('click', () => {
     }
 });
 
-const closeModal = () => profileModal.classList.add('hidden');
-document.getElementById('closeProfileModalBtn').addEventListener('click', closeModal); 
-document.getElementById('cancelProfileBtn').addEventListener('click', closeModal);
+const closeProfileModal = () => profileModal.classList.add('hidden');
+document.getElementById('closeProfileModalBtn').addEventListener('click', closeProfileModal); 
+document.getElementById('cancelProfileBtn').addEventListener('click', closeProfileModal);
 
 saveProfileBtn.addEventListener('click', async () => {
     const studentKey = document.getElementById('modalStudentKey').value; 
     const btn = document.getElementById('saveProfileBtn');
     
     const updates = {
-        fullName: document.getElementById('editFullName').value.trim(), 
-        mobile: document.getElementById('editMobile').value.trim(),
-        password: document.getElementById('editPassword').value.trim(), 
-        address: document.getElementById('editAddress').value.trim(),
-        membership: document.getElementById('editMembership').value.trim(), 
-        photoUrl: document.getElementById('editPhotoUrl').value.trim(),
-        idProofUrl: document.getElementById('editIdProofUrl').value.trim(), 
+        fullName: document.getElementById('editFullName').value.trim(), mobile: document.getElementById('editMobile').value.trim(),
+        password: document.getElementById('editPassword').value.trim(), address: document.getElementById('editAddress').value.trim(),
+        membership: document.getElementById('editMembership').value.trim(),
         status: document.getElementById('adminAccountStatus').value,
-        seatNumber: document.getElementById('adminSeatNumber').value.trim(), 
-        validTill: document.getElementById('adminValidTill').value.trim()
+        seatNumber: document.getElementById('adminSeatNumber').value.trim(), validTill: document.getElementById('adminValidTill').value.trim()
     };
-
     if (updates.status === "Approved" && (!updates.seatNumber || !updates.validTill)) return alert("Please allot a Seat Number and Valid Till date.");
 
     try {
-        btn.innerHTML = `<span class="mr-2">⏳</span> Saving...`; 
-        btn.disabled = true;
+        btn.innerHTML = `<span class="mr-2">⏳</span> Saving...`; btn.disabled = true;
         await update(ref(db, `Students/${studentKey}`), updates);
         alert(`Success! Profile updated.`);
-        closeModal();
-    } catch (error) { 
-        alert("Something went wrong!"); 
-    } finally { 
-        btn.innerHTML = `<span class="mr-2">✅</span> Save Changes`; 
-        btn.disabled = false; 
+        closeProfileModal();
+    } catch (error) { alert("Something went wrong!"); } 
+    finally { btn.innerHTML = `<span class="mr-2">✅</span> Save Changes`; btn.disabled = false; }
+});
+
+// ==========================================
+// 7. FEES MANAGEMENT (COLLECT FEE ENGINE)
+// ==========================================
+const paymentModal = document.getElementById('paymentModal');
+
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-collect-fee');
+    if (btn) {
+        const key = btn.getAttribute('data-key');
+        const student = allStudentsDict[key];
+        if(!student) return;
+
+        document.getElementById('payStudentKey').value = key;
+        document.getElementById('payStudentName').innerText = student.fullName || key;
+        document.getElementById('payOldExpiry').innerText = student.validTill || 'No Date';
+        
+        // Auto-fill next month data
+        document.getElementById('payMonthFolder').value = `${monthStr} ${year}`;
+        document.getElementById('payAmount').value = ""; // Let admin enter amount
+        
+        // Auto-calculate extension (Just a helper, Admin can edit)
+        document.getElementById('payD2D').value = `01 ${monthStr} - 30 ${monthStr}`;
+        document.getElementById('payNewValidTill').value = `30 ${monthStr} ${year}`;
+
+        paymentModal.classList.remove('hidden');
     }
 });
 
-document.getElementById('searchAllStudents').addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase(); 
-    const rows = allStudentsTable.getElementsByTagName('tr');
-    for (let row of rows) { row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none'; }
+const closePaymentModal = () => paymentModal.classList.add('hidden');
+document.getElementById('closePaymentModalBtn').addEventListener('click', closePaymentModal);
+
+document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmitPayment');
+    const studentKey = document.getElementById('payStudentKey').value;
+    
+    const amount = parseInt(document.getElementById('payAmount').value);
+    const monthFolder = document.getElementById('payMonthFolder').value.trim();
+    const d2d = document.getElementById('payD2D').value.trim();
+    const newValidTill = document.getElementById('payNewValidTill').value.trim();
+    
+    const currentPayDate = `${date} ${monthStr}`;
+
+    try {
+        btn.innerHTML = `Processing...`; btn.disabled = true;
+        
+        // Root Multi-path update (Updates Students and Payments node simultaneously)
+        const multiUpdates = {};
+        multiUpdates[`Students/${studentKey}/validTill`] = newValidTill;
+        multiUpdates[`Payments/${studentKey}/${monthFolder}`] = {
+            amount: amount,
+            d2d: d2d,
+            payDate: currentPayDate
+        };
+
+        await update(ref(db), multiUpdates);
+        alert(`✅ Fee Collected Successfully! Validation extended to ${newValidTill}.`);
+        closePaymentModal();
+    } catch(err) {
+        console.error(err);
+        alert("Failed to record payment.");
+    } finally {
+        btn.innerHTML = `Confirm Payment & Renew`; btn.disabled = false;
+    }
 });
 
 // ==========================================
-// 7. MANUAL ENTRY LOGIC
+// 8. SEARCH & MANUAL ENTRY
 // ==========================================
-document.getElementById('manualValidTill').placeholder = `e.g., 30 ${monthStr} ${year}`;
+document.getElementById('searchAllStudents').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase(); const rows = allStudentsTable.getElementsByTagName('tr');
+    for (let row of rows) { row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none'; }
+});
 
+document.getElementById('manualValidTill').placeholder = `e.g., 30 ${monthStr} ${year}`;
 document.getElementById('manualEntryForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const username = document.getElementById('manualUsername').value.trim();
@@ -449,6 +521,6 @@ document.getElementById('manualEntryForm').addEventListener('submit', async (e) 
         alert(`✅ Success! Student "${username}" has been manually registered.`);
         document.getElementById('manualEntryForm').reset();
         document.getElementById('nav-dashboard').click();
-    } catch (error) { alert("Network Error: Could not save student data."); } 
+    } catch (error) { alert("Network Error"); } 
     finally { btn.innerHTML = `<span class="mr-2">💾</span> Save Student Direct to System`; btn.disabled = false; }
 });

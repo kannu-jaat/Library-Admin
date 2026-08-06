@@ -42,6 +42,7 @@ const dateString1 = `${date} ${monthStr} ${year}`;
 const dateString2 = `${date < 10 ? '0' + date : date} ${monthStr} ${year}`;
 
 let allStudentsDict = JSON.parse(localStorage.getItem('allStudentsDataCache')) || {}; 
+let allPaymentsDict = JSON.parse(localStorage.getItem('allPaymentsDataCache')) || {};
 let globalTotalSeats = 100; 
 
 function parseRegDate(dateStr) {
@@ -53,6 +54,38 @@ function parseRegDate(dateStr) {
         const tParts = parts[1].split('-');
         return new Date(dParts[2], dParts[1]-1, dParts[0], tParts[0], tParts[1]);
     } catch(e) { return new Date(0); }
+}
+
+// 🔥 Check if fee is Paid or Due based on validTill string (e.g., "30 August 2026")
+function checkFeeStatus(validTillStr) {
+    if(!validTillStr) return "Due";
+    try {
+        const parts = validTillStr.trim().split(' ');
+        if(parts.length < 3) return "Due";
+        const day = parseInt(parts[0]);
+        const monthName = parts[1];
+        const yr = parseInt(parts[2]);
+        const monthIdx = months.indexOf(monthName);
+        if(monthIdx === -1) return "Due";
+
+        const validDate = new Date(yr, monthIdx, day, 23, 59, 59);
+        return today <= validDate ? "Paid" : "Due";
+    } catch(e) {
+        return "Due";
+    }
+}
+
+// 🔥 Get Latest Paid Month from Payments Node
+function getLatestPaidMonth(studentKey) {
+    const studentPayments = allPaymentsDict[studentKey];
+    if(!studentPayments) return "No Payment Record";
+    
+    let monthsList = Object.keys(studentPayments);
+    if(monthsList.length === 0) return "No Payment Record";
+
+    // Sort months descending based on Date value
+    monthsList.sort((a, b) => new Date(b) - new Date(a));
+    return monthsList[0]; // Returns latest month like "August 2026"
 }
 
 // 🔥 NUMBER-WISE SORTED SEAT MATRIX ENGINE (1 to Total Seats)
@@ -80,7 +113,6 @@ function renderSeatMap() {
     let allSeats = [];
     let emptyCount = 0;
 
-    // Generate seats 1 to globalTotalSeats in strict numerical order
     for (let i = 1; i <= globalTotalSeats; i++) {
         let seatStr = i.toString();
         let occupant = seatMap[seatStr.toLowerCase()];
@@ -91,16 +123,6 @@ function renderSeatMap() {
         } else {
             allSeats.push({ type: 'empty', seat: seatStr, name: 'Available', photo: null, key: null });
             emptyCount++;
-        }
-    }
-
-    // Also check if any student has a custom seat number not in 1..N range
-    for (let key in seatMap) {
-        let occ = seatMap[key];
-        let exists = allSeats.some(s => s.seat.toLowerCase() === occ.seatNum.toLowerCase());
-        if(!exists) {
-            allSeats.push({ type: 'occupied', seat: occ.seatNum, name: occ.name, photo: occ.photo, key: occ.key });
-            occupiedCount++;
         }
     }
 
@@ -160,6 +182,14 @@ function loadCachedDashboard() {
 }
 loadCachedDashboard();
 
+// FETCH PAYMENTS DATA
+onValue(ref(db, 'Payments'), (snapshot) => {
+    if(snapshot.exists()) {
+        allPaymentsDict = snapshot.val();
+        localStorage.setItem('allPaymentsDataCache', JSON.stringify(allPaymentsDict));
+    }
+});
+
 onValue(ref(db, 'totalSeat'), (snapshot) => {
     if (snapshot.exists()) {
         globalTotalSeats = snapshot.val();
@@ -186,10 +216,13 @@ onValue(ref(db, 'Students'), (snapshot) => {
             allStudentsDict[studentKey] = student;
             
             const photo = student.photoUrl || `https://ui-avatars.com/api/?name=${student.fullName || 'User'}&background=0D8ABC&color=fff`;
-            let feeColor = student.feeStatus !== "Paid" ? "text-red-400 font-bold" : "text-emerald-400";
-            let feeText = student.feeStatus !== "Paid" ? `Due: ₹${student.dueAmount || 0}` : "Paid";
             
-            if (student.feeStatus !== "Paid" || (student.dueAmount && student.dueAmount > 0)) {
+            // Check fee status dynamically using validTill
+            const currentFeeStatus = checkFeeStatus(student.validTill);
+            let feeColor = currentFeeStatus === "Paid" ? "text-emerald-400" : "text-red-400 font-bold";
+            let feeText = currentFeeStatus === "Paid" ? "Paid" : "Due";
+            
+            if (currentFeeStatus === "Due" && student.status === "Approved") {
                 pendingFeeNames.push(student.fullName || studentKey);
             }
 
@@ -291,7 +324,6 @@ function openProfileModal(studentKey) {
     const student = allStudentsDict[studentKey];
     if(!student) return alert("Data not synced yet.");
     
-    // Default to View Mode
     isEditingMode = false;
     setProfileInputsEditable(false);
 
@@ -313,9 +345,10 @@ function openProfileModal(studentKey) {
     document.getElementById('adminAccountStatus').value = student.status || 'Approved'; 
     document.getElementById('adminSeatNumber').value = student.seatNumber || '';
     document.getElementById('adminValidTill').value = student.validTill || ''; 
-    document.getElementById('adminFeeStatus').value = student.feeStatus || 'Paid';
-    document.getElementById('adminDueAmount').value = student.dueAmount || '0';
-    document.getElementById('adminLastPaid').value = student.lastPaidMonth || '';
+    
+    // Dynamic computed values for modal
+    document.getElementById('displayFeeStatus').value = checkFeeStatus(student.validTill);
+    document.getElementById('displayLastPaid').value = getLatestPaidMonth(studentKey);
 
     document.getElementById('modalMainTitle').innerText = "Student Profile (View Mode)";
     document.getElementById('modalIcon').innerText = "👁️";
@@ -327,12 +360,9 @@ function openProfileModal(studentKey) {
 
 function setProfileInputsEditable(enable) {
     const inputs = document.querySelectorAll('.profile-input');
-    inputs.forEach(input => {
-        input.disabled = !enable;
-    });
+    inputs.forEach(input => { input.disabled = !enable; });
 }
 
-// Toggle Edit Mode inside Profile Modal
 toggleEditModeBtn.addEventListener('click', () => {
     isEditingMode = !isEditingMode;
     setProfileInputsEditable(isEditingMode);
@@ -368,10 +398,7 @@ saveProfileBtn.addEventListener('click', async () => {
         idProofUrl: document.getElementById('editIdProofUrl').value.trim(), 
         status: document.getElementById('adminAccountStatus').value,
         seatNumber: document.getElementById('adminSeatNumber').value.trim(), 
-        validTill: document.getElementById('adminValidTill').value.trim(),
-        feeStatus: document.getElementById('adminFeeStatus').value, 
-        dueAmount: parseInt(document.getElementById('adminDueAmount').value) || 0,
-        lastPaidMonth: document.getElementById('adminLastPaid').value.trim()
+        validTill: document.getElementById('adminValidTill').value.trim()
     };
 
     if (updates.status === "Approved" && (!updates.seatNumber || !updates.validTill)) return alert("Please allot a Seat Number and Valid Till date.");
@@ -400,7 +427,6 @@ document.getElementById('searchAllStudents').addEventListener('input', (e) => {
 // 7. MANUAL ENTRY LOGIC
 // ==========================================
 document.getElementById('manualValidTill').placeholder = `e.g., 30 ${monthStr} ${year}`;
-document.getElementById('manualLastPaid').value = `${monthStr} ${year}`;
 
 document.getElementById('manualEntryForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -417,8 +443,7 @@ document.getElementById('manualEntryForm').addEventListener('submit', async (e) 
             fullName: document.getElementById('manualFullName').value.trim(), mobile: document.getElementById('manualMobile').value.trim(),
             password: document.getElementById('manualPassword').value.trim(), membership: document.getElementById('manualMembership').value.trim(),
             address: document.getElementById('manualAddress').value.trim(), seatNumber: document.getElementById('manualSeat').value.trim(),
-            validTill: document.getElementById('manualValidTill').value.trim(), feeStatus: document.getElementById('manualFeeStatus').value,
-            dueAmount: parseInt(document.getElementById('manualDueAmount').value) || 0, lastPaidMonth: document.getElementById('manualLastPaid').value.trim(),
+            validTill: document.getElementById('manualValidTill').value.trim(),
             status: "Approved", registrationTime: currentDateTime, photoUrl: "", idProofUrl: ""
         });
         alert(`✅ Success! Student "${username}" has been manually registered.`);

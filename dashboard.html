@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Library System</title>
     
+    <!-- PWA & Mobile App Setup -->
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -32,16 +33,13 @@
         
         .view-section { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .marquee-container { overflow: hidden; white-space: nowrap; }
-        .marquee-content { display: inline-block; animation: marquee 10s linear infinite; }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-200 h-screen flex overflow-hidden font-sans relative">
 
     <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/80 z-30 hidden backdrop-blur-sm md:hidden transition-opacity"></div>
 
+    <!-- SIDEBAR -->
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-slate-800 flex flex-col justify-between border-r border-slate-700 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none">
         <div>
             <div class="h-20 flex items-center justify-between md:justify-center px-6 md:px-0 border-b border-slate-700 bg-slate-900/50">
@@ -57,25 +55,45 @@
             </div>
 
             <nav class="mt-4 flex flex-col space-y-1 overflow-y-auto max-h-[calc(100vh-160px)]">
-                <a id="nav-dashboard" class="nav-item active flex items-center px-6 py-3 text-cyan-400 bg-slate-800/50"><span class="text-xl mr-3">📊</span> Dashboard Overview</a>
+                <a id="nav-dashboard" class="nav-item active flex items-center px-6 py-3 text-cyan-400 bg-slate-800/50">
+                    <span class="text-xl mr-3">📊</span> Dashboard Overview
+                </a>
                 
                 <div class="px-6 py-2 mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Student Management</div>
-                <a id="nav-approvals" class="nav-item flex items-center px-6 py-3 text-slate-300"><span class="text-xl mr-3">✅</span> Pending Approvals</a>
-                <a id="nav-manual-entry" class="nav-item flex items-center px-6 py-3 text-slate-300"><span class="text-xl mr-3">📝</span> Add Manual Entry</a>
-                <a id="nav-all-students" class="nav-item flex items-center px-6 py-3 text-slate-300"><span class="text-xl mr-3">👥</span> All Students Data</a>
+                <a id="nav-approvals" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">✅</span> Pending Approvals
+                </a>
+                <a id="nav-manual-entry" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">📝</span> Add Manual Entry
+                </a>
+                <a id="nav-all-students" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">👥</span> All Students Data
+                </a>
 
                 <div class="px-6 py-2 mt-2 text-xs font-bold text-slate-500 uppercase tracking-wider">Library Operations</div>
-                <a id="nav-seats" class="nav-item flex items-center px-6 py-3 text-slate-300"><span class="text-xl mr-3">🪑</span> Seat Management</a>
-                <a id="nav-fees" class="nav-item flex items-center px-6 py-3 text-slate-300"><span class="text-xl mr-3">💳</span> Fees & Approvals</a>
-                <a id="nav-qr" class="nav-item flex items-center px-6 py-3 text-slate-300"><span class="text-xl mr-3">📱</span> QR & Attendance</a>
-                <a id="nav-notices" class="nav-item flex items-center px-6 py-3 text-slate-300"><span class="text-xl mr-3">🔔</span> Send Notifications</a>
+                <a id="nav-seats" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">🪑</span> Seat Management
+                </a>
+                <a id="nav-fees" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">💳</span> Fees & Approvals
+                </a>
+                <a id="nav-qr" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">📱</span> QR & Attendance
+                </a>
+                <a id="nav-notices" class="nav-item flex items-center px-6 py-3 text-slate-300">
+                    <span class="text-xl mr-3">🔔</span> Send Notifications
+                </a>
             </nav>
         </div>
+
         <div class="p-4 border-t border-slate-700 bg-slate-900/30">
-            <button id="logoutBtn" class="w-full flex items-center justify-center px-4 py-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors border border-transparent hover:border-red-500/30"><span class="text-lg mr-2">🚪</span> Secure Logout</button>
+            <button id="logoutBtn" class="w-full flex items-center justify-center px-4 py-2 text-red-400 hover:bg-red-400/10 rounded-lg transition-colors border border-transparent hover:border-red-500/30">
+                <span class="text-lg mr-2">🚪</span> Secure Logout
+            </button>
         </div>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[url('https://backiee.com/static/wallpapers/3840x2160/420082.jpg')] bg-cover bg-center relative w-full">
         <div class="absolute inset-0 bg-slate-900/80 z-0"></div>
 
@@ -100,46 +118,54 @@
                 <!-- VIEW 1: DASHBOARD -->
                 <div id="view-dashboard" class="view-section block w-full">
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
-                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-cyan-400 relative overflow-hidden">
-                            <p class="text-xs md:text-sm text-cyan-200 font-mono mb-1 uppercase">Total Active</p>
-                            <h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2" id="statTotalStudents">--</h3>
+                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-cyan-400 relative overflow-hidden flex flex-col justify-between">
+                            <div>
+                                <p class="text-xs md:text-sm text-cyan-200 font-mono mb-1 uppercase">Total Active</p>
+                                <h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2" id="statTotalStudents">--</h3>
+                            </div>
+                            <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl md:text-7xl">👥</div>
                         </div>
-                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-amber-400 relative overflow-hidden">
-                            <p class="text-xs md:text-sm text-amber-200 font-mono mb-1 uppercase">Present Today</p>
-                            <h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2" id="statPresentToday">--</h3>
+                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-amber-400 relative overflow-hidden flex flex-col justify-between">
+                            <div>
+                                <p class="text-xs md:text-sm text-amber-200 font-mono mb-1 uppercase">Present Today</p>
+                                <h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2" id="statPresentToday">--</h3>
+                            </div>
+                            <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl md:text-7xl">📅</div>
                         </div>
+                        <!-- Updated Pending Fees Card with Names -->
                         <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-red-500 relative overflow-hidden flex flex-col justify-between">
                             <div>
                                 <p class="text-xs md:text-sm text-red-200 font-mono mb-1 uppercase">Pending Fees</p>
-                                <h3 class="text-2xl md:text-4xl font-bold text-white mt-1" id="statPendingFees">--</h3>
+                                <h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2" id="statPendingFees">--</h3>
                             </div>
-                            <div class="marquee-container mt-2 w-full text-xs text-red-300 opacity-80 h-4">
-                                <span class="marquee-content" id="pendingFeesNames">Fetching names...</span>
-                            </div>
+                            <div id="pendingFeesNames" class="text-[10px] md:text-xs text-red-300 mt-2 truncate w-full h-4">Loading names...</div>
+                            <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl md:text-7xl">💳</div>
                         </div>
-                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-emerald-400 relative overflow-hidden">
-                            <p class="text-xs md:text-sm text-emerald-200 font-mono mb-1 uppercase">Available Seats</p>
-                            <h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2 flex items-baseline">
-                                <span id="statAvailableSeats">--</span> <span class="text-xs md:text-lg text-slate-400 ml-1 md:ml-2">/ <span id="statTotalCapacity">--</span></span>
-                            </h3>
+                        <div class="glass-card rounded-xl p-4 md:p-6 border-l-4 border-l-emerald-400 relative overflow-hidden flex flex-col justify-between">
+                            <div>
+                                <p class="text-xs md:text-sm text-emerald-200 font-mono mb-1 uppercase">Available Seats</p>
+                                <h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2 flex items-baseline">
+                                    <span id="statAvailableSeats">--</span> <span class="text-xs md:text-lg text-slate-400 ml-1 md:ml-2">/ <span id="statTotalCapacity">--</span></span>
+                                </h3>
+                            </div>
+                            <div class="absolute -right-2 -bottom-2 opacity-10 text-5xl md:text-7xl">🪑</div>
                         </div>
                     </div>
 
-                    <!-- Recent Students Table -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-2 glass-card rounded-xl p-4 md:p-6 w-full overflow-hidden">
                             <div class="flex justify-between items-center mb-4 md:mb-6 border-b border-slate-700/50 pb-4">
-                                <h2 class="text-lg md:text-xl font-bold text-white flex items-center"><span class="mr-2">⚡</span> Recent Admissions</h2>
+                                <h2 class="text-lg md:text-xl font-bold text-white flex items-center"><span class="mr-2">⚡</span> Recent Students</h2>
                                 <button id="btnViewAllStudents" class="text-cyan-400 text-xs md:text-sm hover:text-cyan-300 font-bold tracking-wider">VIEW ALL</button>
                             </div>
                             <div class="overflow-x-auto w-full">
                                 <table class="w-full text-left text-sm text-slate-300 whitespace-nowrap">
                                     <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
                                         <tr>
-                                            <th class="px-4 py-3 rounded-tl-lg">Student Profile (Click Photo)</th>
+                                            <th class="px-4 py-3 rounded-tl-lg">Student Profile</th>
                                             <th class="px-4 py-3">Fee Status</th>
                                             <th class="px-4 py-3">Valid Till</th>
-                                            <th class="px-4 py-3 rounded-tr-lg">Joined At</th>
+                                            <th class="px-4 py-3 rounded-tr-lg">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody id="recentActivityTable">
@@ -148,17 +174,17 @@
                                 </table>
                             </div>
                         </div>
-                        <!-- Actions -->
+
                         <div class="glass-card rounded-xl p-4 md:p-6 w-full">
                             <h2 class="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 border-b border-slate-700/50 pb-4">Quick Actions</h2>
                             <div class="space-y-3 md:space-y-4">
-                                <button id="btnQuickAdd" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm shadow-[0_0_10px_rgba(8,145,178,0.4)]">
+                                <button id="btnQuickAdd" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base shadow-[0_0_10px_rgba(8,145,178,0.4)]">
                                     <span class="text-lg mr-2">📝</span> Add Manual Entry
                                 </button>
-                                <button id="btnQuickSeat" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm">
+                                <button id="btnQuickSeat" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base">
                                     <span class="text-lg mr-2">🪑</span> View Seat Matrix
                                 </button>
-                                <button id="btnQuickQR" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm">
+                                <button id="btnQuickQR" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center text-sm md:text-base">
                                     <span class="text-lg mr-2">🔲</span> Generate Today's QR
                                 </button>
                             </div>
@@ -166,40 +192,199 @@
                     </div>
                 </div>
 
-                <!-- 🔥 VIEW: SEAT MATRIX (NEW!) -->
+                <!-- VIEW 2: PENDING APPROVALS -->
+                <div id="view-approvals" class="view-section hidden w-full">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Pending <span class="text-amber-400 font-light">Approvals</span></h2>
+                    <div class="glass-card rounded-xl p-4 md:p-6 w-full overflow-hidden">
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left text-sm text-slate-300 whitespace-nowrap">
+                                <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-tl-lg">Student Details</th>
+                                        <th class="px-4 py-3">Contact Info</th>
+                                        <th class="px-4 py-3">Membership</th>
+                                        <th class="px-4 py-3 rounded-tr-lg">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pendingApprovalsTable">
+                                    <tr><td colspan="4" class="text-center py-6 text-slate-400">Loading pending requests...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: ALL STUDENTS -->
+                <div id="view-all-students" class="view-section hidden w-full">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700/50 pb-4 space-y-4 md:space-y-0">
+                        <h2 class="text-xl md:text-2xl font-bold text-white">All <span class="text-cyan-400 font-light">Students</span></h2>
+                        <input type="text" id="searchAllStudents" placeholder="Search by name or mobile..." class="w-full md:w-64 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 text-sm">
+                    </div>
+                    <div class="glass-card rounded-xl p-4 md:p-6 w-full overflow-hidden">
+                        <div class="overflow-x-auto w-full">
+                            <table class="w-full text-left text-sm text-slate-300 whitespace-nowrap">
+                                <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-tl-lg">Student Profile</th>
+                                        <th class="px-4 py-3">Seat No.</th>
+                                        <th class="px-4 py-3">Fee Status</th>
+                                        <th class="px-4 py-3">Valid Till</th>
+                                        <th class="px-4 py-3 rounded-tr-lg">Profile</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allStudentsTable">
+                                    <tr><td colspan="5" class="text-center py-6 text-slate-400">Loading all students...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 4: MANUAL ENTRY FORM -->
+                <div id="view-manual-entry" class="view-section hidden w-full">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">Add <span class="text-cyan-400 font-light">Manual Entry</span></h2>
+                    <!-- Same Form Layout from previous iteration (No changes needed here) -->
+                    <div class="glass-card rounded-xl p-4 md:p-8 w-full max-w-4xl mx-auto">
+                        <form id="manualEntryForm" class="space-y-8">
+                            <div>
+                                <h3 class="text-sm font-bold text-cyan-500 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">1. System Identity</h3>
+                                <div class="relative">
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Username (No spaces allowed)*</label>
+                                    <input type="text" id="manualUsername" required pattern="^\S+$" title="No spaces allowed" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all text-sm" placeholder="e.g., rahul123">
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">2. Personal Details</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div><label class="block text-xs font-medium text-slate-400 mb-1">Full Name*</label><input type="text" id="manualFullName" required class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all text-sm"></div>
+                                    <div><label class="block text-xs font-medium text-slate-400 mb-1">Mobile Number*</label><input type="tel" id="manualMobile" required class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all text-sm"></div>
+                                    <div><label class="block text-xs font-medium text-slate-400 mb-1">Password</label><input type="text" id="manualPassword" value="123456" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-slate-300 focus:outline-none focus:border-cyan-500 transition-all text-sm"></div>
+                                    <div><label class="block text-xs font-medium text-slate-400 mb-1">Membership Plan</label><input type="text" id="manualMembership" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all text-sm" placeholder="e.g., Full Day"></div>
+                                    <div class="sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Address</label><input type="text" id="manualAddress" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-cyan-500 transition-all text-sm"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold text-emerald-500 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">3. Library Allotment & Fees</h3>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div><label class="block text-xs font-medium text-slate-400 mb-1">Seat Number</label><input type="text" id="manualSeat" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all text-sm" placeholder="e.g., K03"></div>
+                                    <div><label class="block text-xs font-medium text-slate-400 mb-1">Valid Till Date</label><input type="text" id="manualValidTill" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all text-sm" placeholder="e.g., 30 August 2026"></div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status</label>
+                                        <select id="manualFeeStatus" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all appearance-none text-sm"><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option></select>
+                                    </div>
+                                    <div><label class="block text-xs font-medium text-slate-400 mb-1">Due Amount (₹)</label><input type="number" id="manualDueAmount" value="0" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all text-sm"></div>
+                                    <div class="sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month</label><input type="text" id="manualLastPaid" class="w-full bg-emerald-950/20 border border-emerald-600/50 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500 transition-all text-sm" placeholder="e.g., August 2026"></div>
+                                </div>
+                            </div>
+                            <div class="pt-4 flex justify-end">
+                                <button type="submit" id="btnSaveManualEntry" class="w-full sm:w-auto px-8 py-3 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(8,145,178,0.4)] transition-all font-bold flex items-center justify-center">
+                                    <span class="mr-2" id="iconSaveManual">💾</span> <span id="textSaveManual">Save Student Direct to System</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 🔥 VIEW 5: SEAT MANAGEMENT -->
                 <div id="view-seats" class="view-section hidden w-full">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700/50 pb-4 space-y-4 md:space-y-0">
-                        <h2 class="text-xl md:text-2xl font-bold text-white">Visual <span class="text-cyan-400 font-light">Seat Matrix</span></h2>
-                        <input type="text" id="searchSeats" placeholder="Search by name or seat (e.g., K03)..." class="w-full md:w-64 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 text-sm">
+                        <h2 class="text-xl md:text-2xl font-bold text-white">Seat <span class="text-cyan-400 font-light">Matrix</span></h2>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
+                            <select id="seatFilterStatus" class="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500 text-sm">
+                                <option value="all">All Seats</option>
+                                <option value="occupied">Occupied Only</option>
+                                <option value="empty">Empty Only</option>
+                            </select>
+                            <input type="text" id="seatSearchQuery" placeholder="Search seat or name..." class="w-full sm:w-48 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500 text-sm">
+                        </div>
                     </div>
                     
-                    <div class="glass-card rounded-xl p-4 md:p-6 w-full">
-                        <div class="flex items-center space-x-6 mb-6 text-sm">
-                            <div class="flex items-center"><div class="w-4 h-4 rounded bg-red-900/60 border border-red-500 mr-2 shadow-[0_0_8px_rgba(239,68,68,0.4)]"></div> <span class="text-slate-300">Allotted (<span id="countAllotted">0</span>)</span></div>
-                            <div class="flex items-center"><div class="w-4 h-4 rounded bg-emerald-900/30 border border-emerald-500/50 mr-2"></div> <span class="text-slate-300">Empty (<span id="countEmpty">0</span>)</span></div>
-                        </div>
-                        
-                        <!-- Seat Grid Rendering Container -->
-                        <div id="seatGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 max-h-[60vh] overflow-y-auto p-2">
-                            <!-- Seats injected here via JS -->
-                        </div>
+                    <div class="flex space-x-6 mb-6 px-2">
+                        <div class="flex items-center"><div class="w-3 h-3 rounded-full bg-emerald-500 mr-2 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div><span class="text-sm text-slate-300">Empty (<span id="countEmptySeats">0</span>)</span></div>
+                        <div class="flex items-center"><div class="w-3 h-3 rounded-full bg-red-500 mr-2 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div><span class="text-sm text-slate-300">Occupied (<span id="countOccupiedSeats">0</span>)</span></div>
+                    </div>
+
+                    <div id="seatGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 overflow-y-auto pb-10">
+                        <!-- JS injects matrix here -->
+                        <div class="col-span-full text-center text-slate-500 py-10">Loading Seat Matrix...</div>
                     </div>
                 </div>
 
-                <!-- ALL OTHER VIEWS KEPT SAME BUT HIDDEN -->
-                <div id="view-approvals" class="view-section hidden w-full">... (Skipping huge code duplication for brevity, paste your previous views here) ...</div>
-                <div id="view-all-students" class="view-section hidden w-full">...</div>
-                <div id="view-manual-entry" class="view-section hidden w-full">...</div>
-                <div id="view-placeholder" class="view-section hidden glass-card rounded-xl p-10 text-center w-full">
-                    <span class="text-6xl mb-4 block">🚧</span>
-                    <h2 class="text-3xl font-bold text-white mb-2" id="placeholderTitle">Coming Soon</h2>
+                <!-- DUMMY SECTION FOR OTHERS -->
+                <div id="view-placeholder" class="view-section hidden glass-card rounded-xl p-6 md:p-10 text-center w-full">
+                    <span class="text-5xl md:text-6xl mb-4 block">🚧</span>
+                    <h2 class="text-2xl md:text-3xl font-bold text-white mb-2" id="placeholderTitle">Section Under Construction</h2>
+                    <p class="text-sm md:text-base text-slate-400">Yeh feature abhi hum JS me zinda karenge!</p>
                 </div>
-
             </div>
         </div>
-        <!-- KEEP YOUR EXISTING PROFILE MODAL HTML EXACTLY HERE -->
+
+        <!-- REUSABLE PROFILE MODAL -->
+        <div id="profileModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm transition-opacity">
+            <div class="glass-card rounded-xl md:rounded-2xl w-full max-w-5xl max-h-[95vh] overflow-y-auto border border-cyan-500/30 shadow-[0_0_30px_rgba(0,255,255,0.15)]">
+                <!-- Inner Modal Code remains exactly the same -->
+                <div class="px-4 py-4 md:px-8 md:py-5 border-b border-slate-700 flex justify-between items-center sticky top-0 bg-slate-800/90 backdrop-blur-md z-10">
+                    <h2 class="text-lg md:text-xl font-bold text-white flex items-center"><span class="text-cyan-400 mr-2" id="modalIcon">⚡</span> <span id="modalMainTitle">Review Student Data</span></h2>
+                    <button id="closeProfileModalBtn" class="text-slate-400 hover:text-red-400 transition-colors">
+                        <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
+                    <div class="space-y-4">
+                        <h3 class="text-xs md:text-sm font-bold text-blue-400 uppercase tracking-wider mb-2 md:mb-4 border-b border-slate-700 pb-2">Student Provided Details</h3>
+                        <input type="hidden" id="modalStudentKey">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="col-span-1 sm:col-span-2 flex items-center space-x-4 mb-2">
+                                <img id="modalPhotoPreview" src="" class="w-14 h-14 md:w-16 md:h-16 rounded-xl border-2 border-blue-500 object-cover">
+                                <div class="flex-1">
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Photo URL</label>
+                                    <input type="text" id="editPhotoUrl" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-xs md:text-sm">
+                                </div>
+                            </div>
+                            <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Full Name</label><input type="text" id="editFullName" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm"></div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Mobile</label><input type="text" id="editMobile" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm"></div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Password</label><input type="text" id="editPassword" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm"></div>
+                            <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Address</label><input type="text" id="editAddress" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm"></div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Membership Plan</label><input type="text" id="editMembership" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm"></div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Reg Time</label><input type="text" id="editRegTime" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-slate-300 text-xs" readonly></div>
+                            <div class="col-span-1 sm:col-span-2">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">ID Proof URL</label>
+                                <div class="flex space-x-2">
+                                    <input type="text" id="editIdProofUrl" class="w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-slate-300 text-xs">
+                                    <a id="btnViewId" href="#" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-xs font-medium flex items-center justify-center">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4 mt-4 lg:mt-0">
+                        <h3 class="text-xs md:text-sm font-bold text-cyan-500 uppercase tracking-wider mb-2 md:mb-4 border-b border-slate-700 pb-2">Admin Library Settings</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Account Status</label>
+                                <select id="adminAccountStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white text-sm"><option value="Approved">Approved</option><option value="Pending">Pending</option><option value="Rejected">Rejected</option></select>
+                            </div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Seat Number</label><input type="text" id="adminSeatNumber" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm"></div>
+                            <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Valid Till Date</label><input type="text" id="adminValidTill" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm"></div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status</label>
+                                <select id="adminFeeStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2.5 text-white text-sm"><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option></select>
+                            </div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Due Amount (₹)</label><input type="number" id="adminDueAmount" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm"></div>
+                            <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Last Paid Month</label><input type="text" id="adminLastPaid" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-4 py-4 md:px-8 md:py-5 border-t border-slate-700 bg-slate-800/50 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
+                    <button id="cancelProfileBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 font-medium text-sm">Cancel</button>
+                    <button id="saveProfileBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(8,145,178,0.4)] font-medium flex items-center justify-center text-sm">
+                        <span class="mr-2" id="saveProfileIcon">✅</span> <span id="saveProfileText">Save & Update</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 
+    <!-- App Scripts (Router & UI) -->
     <script>
         const sidebar = document.getElementById('sidebar');
         const sidebarBackdrop = document.getElementById('sidebarBackdrop');
@@ -220,14 +405,18 @@
         };
 
         function switchView(navId) {
-            document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('active', 'text-cyan-400', 'bg-slate-800/50'); el.classList.add('text-slate-300'); });
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active', 'text-cyan-400', 'bg-slate-800/50'); el.classList.add('text-slate-300');
+            });
             const activeNav = document.getElementById(navId);
-            if(activeNav) { activeNav.classList.add('active', 'text-cyan-400', 'bg-slate-800/50'); activeNav.classList.remove('text-slate-300'); }
+            if(activeNav) {
+                activeNav.classList.add('active', 'text-cyan-400', 'bg-slate-800/50'); activeNav.classList.remove('text-slate-300');
+            }
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-            
             const target = views[navId];
             document.getElementById('headerTitle').innerHTML = target.title;
             document.getElementById(target.id).classList.remove('hidden');
+            
             if(target.id === 'view-placeholder') document.getElementById('placeholderTitle').innerText = target.name + " Coming Soon";
             if(window.innerWidth < 768 && !sidebar.classList.contains('-translate-x-full')) toggleSidebar();
         }
@@ -236,6 +425,14 @@
         document.getElementById('btnViewAllStudents')?.addEventListener('click', () => switchView('nav-all-students'));
         document.getElementById('btnQuickAdd')?.addEventListener('click', () => switchView('nav-manual-entry'));
         document.getElementById('btnQuickSeat')?.addEventListener('click', () => switchView('nav-seats'));
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch((err) => console.log('SW failed:', err));
+            });
+        }
     </script>
     <script type="module" src="./js/dashboard.js"></script>
 </body>

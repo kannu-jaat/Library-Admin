@@ -34,6 +34,9 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         input:disabled, select:disabled { background-color: rgba(15, 23, 42, 0.6) !important; color: #94a3b8 !important; cursor: not-allowed; border-color: rgba(255,255,255,0.05) !important; }
+        
+        /* Dark Theme Support for Input Pickers */
+        ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-200 h-screen flex overflow-hidden font-sans relative">
@@ -273,7 +276,7 @@
                     </div>
                 </div>
 
-                <!-- 🔥 VIEW 6: FEES MANAGEMENT -->
+                <!-- VIEW 6: FEES MANAGEMENT -->
                 <div id="view-fees" class="view-section hidden w-full">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700/50 pb-4 space-y-4 md:space-y-0">
                         <h2 class="text-xl md:text-2xl font-bold text-white">Fees <span class="text-cyan-400 font-light">Management</span></h2>
@@ -284,13 +287,7 @@
                         <div class="overflow-x-auto w-full">
                             <table class="w-full text-left text-sm text-slate-300 whitespace-nowrap">
                                 <thead class="text-xs text-slate-400 uppercase bg-slate-800/80">
-                                    <tr>
-                                        <th class="px-4 py-3 rounded-tl-lg">Student Name</th>
-                                        <th class="px-4 py-3">Valid Till</th>
-                                        <th class="px-4 py-3">Fee Status</th>
-                                        <th class="px-4 py-3">Last Paid</th>
-                                        <th class="px-4 py-3 rounded-tr-lg">Action</th>
-                                    </tr>
+                                    <tr><th class="px-4 py-3 rounded-tl-lg">Student Name</th><th class="px-4 py-3">Valid Till</th><th class="px-4 py-3">Fee Status</th><th class="px-4 py-3">Last Paid</th><th class="px-4 py-3 rounded-tr-lg">Action</th></tr>
                                 </thead>
                                 <tbody id="feesTable">
                                     <tr><td colspan="5" class="text-center py-6 text-slate-400">Loading fee records...</td></tr>
@@ -308,7 +305,7 @@
             </div>
         </div>
 
-        <!-- REUSABLE PROFILE MODAL (View Mode Default + Edit Toggle) -->
+        <!-- REUSABLE PROFILE MODAL -->
         <div id="profileModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm transition-opacity">
             <div class="glass-card rounded-xl md:rounded-2xl w-full max-w-5xl max-h-[95vh] overflow-y-auto border border-cyan-500/30 shadow-[0_0_30px_rgba(0,255,255,0.15)]">
                 <div class="px-4 py-4 md:px-8 md:py-5 border-b border-slate-700 flex justify-between items-center sticky top-0 bg-slate-800/90 backdrop-blur-md z-10">
@@ -325,10 +322,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="col-span-1 sm:col-span-2 flex items-center space-x-4 mb-2">
                                 <img id="modalPhotoPreview" src="" class="w-14 h-14 md:w-16 md:h-16 rounded-xl border-2 border-blue-500 object-cover">
-                                <div class="flex-1">
-                                    <label class="block text-xs font-medium text-slate-400 mb-1">Photo URL</label>
-                                    <input type="text" id="editPhotoUrl" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-xs md:text-sm" disabled>
-                                </div>
+                                <div class="flex-1"><label class="block text-xs font-medium text-slate-400 mb-1">Photo URL</label><input type="text" id="editPhotoUrl" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-xs md:text-sm" disabled></div>
                             </div>
                             <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Full Name</label><input type="text" id="editFullName" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
                             <div><label class="block text-xs font-medium text-slate-400 mb-1">Mobile</label><input type="text" id="editMobile" class="profile-input w-full bg-blue-950/20 border border-blue-500 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
@@ -356,74 +350,88 @@
                             </div>
                             <div><label class="block text-xs font-medium text-slate-400 mb-1">Seat Number</label><input type="text" id="adminSeatNumber" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
                             <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Valid Till Date</label><input type="text" id="adminValidTill" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Fee Status (Auto)</label>
-                                <input type="text" id="displayFeeStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-emerald-400 font-bold text-sm" disabled>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Latest Paid Month</label>
-                                <input type="text" id="displayLastPaid" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-amber-400 font-bold text-sm" disabled>
-                            </div>
-                            <div class="col-span-1 sm:col-span-2">
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Old Due Amount (₹) [If Any]</label>
-                                <input type="number" id="adminDueAmount" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm" disabled>
-                            </div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Fee Status (Auto)</label><input type="text" id="displayFeeStatus" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-emerald-400 font-bold text-sm" disabled></div>
+                            <div><label class="block text-xs font-medium text-slate-400 mb-1">Latest Paid Month</label><input type="text" id="displayLastPaid" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-amber-400 font-bold text-sm" disabled></div>
+                            <div class="col-span-1 sm:col-span-2"><label class="block text-xs font-medium text-slate-400 mb-1">Old Due Amount (₹) [If Any]</label><input type="number" id="adminDueAmount" class="profile-input w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-white text-sm" disabled></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="px-4 py-4 md:px-8 md:py-5 border-t border-slate-700 bg-slate-800/50 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
-                    <button id="toggleEditModeBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-medium text-sm flex items-center justify-center">
-                        <span class="mr-2">✏️</span> Enable Edit Mode
-                    </button>
+                    <button id="toggleEditModeBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-medium text-sm flex items-center justify-center"><span class="mr-2">✏️</span> Enable Edit Mode</button>
                     <div class="flex space-x-3 w-full sm:w-auto">
                         <button id="cancelProfileBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 font-medium text-sm">Close</button>
-                        <button id="saveProfileBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(8,145,178,0.4)] font-medium hidden items-center justify-center text-sm">
-                            <span class="mr-2">✅</span> Save Changes
-                        </button>
+                        <button id="saveProfileBtn" class="w-full sm:w-auto px-6 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(8,145,178,0.4)] font-medium hidden items-center justify-center text-sm"><span class="mr-2">✅</span> Save Changes</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 🔥 ADD PAYMENT MODAL -->
-        <div id="paymentModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm transition-opacity">
-            <div class="glass-card rounded-xl md:rounded-2xl w-full max-w-md border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
-                <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/90 rounded-t-xl md:rounded-t-2xl">
-                    <h2 class="text-lg font-bold text-white flex items-center"><span class="text-emerald-400 mr-2">💳</span> Add New Payment</h2>
-                    <button id="closePaymentModalBtn" class="text-slate-400 hover:text-red-400 transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <!-- 🔥 DUAL-PANE FEE HISTORY & ADD PAYMENT MODAL -->
+        <div id="feeHistoryModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm transition-opacity">
+            <div class="glass-card rounded-xl md:rounded-2xl w-full max-w-5xl max-h-[95vh] overflow-y-auto border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+                
+                <div class="px-4 py-4 md:px-8 md:py-5 border-b border-slate-700 flex justify-between items-center sticky top-0 bg-slate-800/90 backdrop-blur-md z-10">
+                    <h2 class="text-lg md:text-xl font-bold text-white flex items-center"><span class="text-emerald-400 mr-2">💳</span> Manage Fees & History</h2>
+                    <button id="closeFeeModalBtn" class="text-slate-400 hover:text-red-400 transition-colors">
+                        <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
-                <div class="p-6 space-y-4">
-                    <input type="hidden" id="payStudentKey">
-                    <h3 id="payStudentName" class="text-center text-cyan-400 font-bold mb-4">Student Name</h3>
-                    
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Month & Year (e.g., September 2026)</label>
-                        <input type="text" id="payMonthYear" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-emerald-500 outline-none">
+
+                <div class="p-4 md:p-8 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
+                    <!-- LEFT PANE: Payment History -->
+                    <div class="space-y-4">
+                        <h3 class="text-xs md:text-sm font-bold text-amber-400 uppercase tracking-wider mb-2 border-b border-slate-700 pb-2">Past Payments History</h3>
+                        <p id="payStudentName" class="text-cyan-400 font-bold mb-4 text-sm md:text-base">Student Name</p>
+                        
+                        <div class="overflow-y-auto max-h-64 pr-2 space-y-3" id="historyTableContainer">
+                            <!-- History items injected via JS -->
+                            <div class="text-center text-slate-500 py-4 text-sm">Loading history...</div>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Amount Received (₹)</label>
-                        <input type="number" id="payAmount" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-emerald-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Date to Date (D2D) (e.g., 01 Sep - 30 Sep)</label>
-                        <input type="text" id="payD2D" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-emerald-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">New Valid Till Date (Updates Profile)</label>
-                        <input type="text" id="payNewValidTill" class="w-full bg-emerald-900/30 border border-emerald-500/50 rounded-lg px-4 py-2.5 text-emerald-300 font-bold text-sm focus:border-emerald-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Remaining Due Amount (₹)</label>
-                        <input type="number" id="payNewDue" value="0" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-emerald-500 outline-none">
+
+                    <!-- RIGHT PANE: Add New Payment Form -->
+                    <div class="space-y-4 mt-4 lg:mt-0">
+                        <h3 class="text-xs md:text-sm font-bold text-emerald-500 uppercase tracking-wider mb-2 border-b border-slate-700 pb-2">Add New Payment</h3>
+                        
+                        <input type="hidden" id="payStudentKey">
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="col-span-1 sm:col-span-2">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Select Month & Year</label>
+                                <!-- Month Picker -->
+                                <input type="month" id="payMonthPicker" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-emerald-500 outline-none">
+                            </div>
+                            
+                            <div class="col-span-1 sm:col-span-2">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Amount Received (₹)</label>
+                                <input type="number" id="payAmount" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2.5 text-white text-sm focus:border-emerald-500 outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">D2D Start Date</label>
+                                <!-- Date Picker Start -->
+                                <input type="date" id="payD2DStart" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm focus:border-emerald-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-400 mb-1">D2D End Date</label>
+                                <!-- Date Picker End -->
+                                <input type="date" id="payD2DEnd" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm focus:border-emerald-500 outline-none">
+                            </div>
+
+                            <div class="col-span-1 sm:col-span-2">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">New Valid Till (Auto-updates from End Date)</label>
+                                <!-- Auto-filling Date Picker -->
+                                <input type="date" id="payNewValidTill" class="w-full bg-emerald-900/30 border border-emerald-500/50 rounded-lg px-4 py-2.5 text-emerald-300 font-bold text-sm focus:border-emerald-500 outline-none">
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="px-6 py-4 border-t border-slate-700 bg-slate-800/50 flex justify-end space-x-3 rounded-b-xl md:rounded-b-2xl">
-                    <button id="cancelPaymentBtn" class="px-4 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 text-sm">Cancel</button>
-                    <button id="confirmPaymentBtn" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.4)] text-sm font-bold flex items-center">
-                        ✅ Save Payment
+
+                <div class="px-4 py-4 md:px-8 md:py-5 border-t border-slate-700 bg-slate-800/50 flex justify-end space-x-3">
+                    <button id="cancelFeeModalBtn" class="px-6 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-700 text-sm font-medium">Cancel</button>
+                    <button id="confirmPaymentBtn" class="px-6 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.4)] text-sm font-bold flex items-center">
+                        ✅ Save New Payment
                     </button>
                 </div>
             </div>
@@ -474,9 +482,7 @@
     </script>
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch((err) => console.log('SW failed:', err));
-            });
+            window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch((err) => console.log('SW failed:', err)); });
         }
     </script>
     <script type="module" src="./js/dashboard.js"></script>

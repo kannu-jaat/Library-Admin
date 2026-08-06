@@ -2,7 +2,9 @@ import { db, auth } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { ref, onValue, update, get, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// AUTH LOGIC
+// ==========================================
+// 1. AUTHENTICATION
+// ==========================================
 onAuthStateChanged(auth, (user) => {
     if (user) {
         document.getElementById('adminEmailDisplay').innerText = user.email;
@@ -13,7 +15,9 @@ onAuthStateChanged(auth, (user) => {
 });
 document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
-// DOM ELEMENTS
+// ==========================================
+// 2. ALL DOM ELEMENTS (Locked at top to prevent crash)
+// ==========================================
 const statTotalStudents = document.getElementById('statTotalStudents');
 const statPresentToday = document.getElementById('statPresentToday');
 const statPendingFees = document.getElementById('statPendingFees');
@@ -26,6 +30,16 @@ const pendingApprovalsTable = document.getElementById('pendingApprovalsTable');
 const allStudentsTable = document.getElementById('allStudentsTable');
 const profileModal = document.getElementById('profileModal');
 
+// Seat Matrix Elements
+const seatSearchQuery = document.getElementById('seatSearchQuery');
+const seatFilterStatus = document.getElementById('seatFilterStatus');
+const seatGrid = document.getElementById('seatGrid');
+const countOccupiedSeats = document.getElementById('countOccupiedSeats');
+const countEmptySeats = document.getElementById('countEmptySeats');
+
+// ==========================================
+// 3. DATES & GLOBAL VARIABLES
+// ==========================================
 const today = new Date();
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const date = today.getDate();
@@ -37,7 +51,6 @@ const dateString2 = `${date < 10 ? '0' + date : date} ${monthStr} ${year}`;
 let allStudentsDict = JSON.parse(localStorage.getItem('allStudentsDataCache')) || {}; 
 let globalTotalSeats = 100; 
 
-// Helper: Parse DD-MM-YYYY__HH-mm string to Real Date for precise sorting
 function parseRegDate(dateStr) {
     if(!dateStr) return new Date(0); 
     try {
@@ -49,7 +62,74 @@ function parseRegDate(dateStr) {
     } catch(e) { return new Date(0); }
 }
 
-// 🔥 CACHE MANAGER
+// ==========================================
+// 4. CACHE MANAGER & SEAT RENDER ENGINE
+// ==========================================
+function renderSeatMap() {
+    if(!seatSearchQuery || !seatFilterStatus) return;
+    
+    const query = seatSearchQuery.value.toLowerCase();
+    const status = seatFilterStatus.value;
+    
+    let occupiedSeatsList = [];
+    let emptyCount = globalTotalSeats;
+
+    for (let key in allStudentsDict) {
+        const student = allStudentsDict[key];
+        if (student.status === "Approved" && student.seatNumber && student.seatNumber.trim() !== "") {
+            occupiedSeatsList.push({
+                type: 'occupied', seat: student.seatNumber.trim(), name: student.fullName || key,
+                photo: student.photoUrl || `https://ui-avatars.com/api/?name=${student.fullName || 'User'}&background=0D8ABC&color=fff`,
+                key: key
+            });
+            emptyCount--;
+        }
+    }
+    if(emptyCount < 0) emptyCount = 0;
+
+    let allSeats = [...occupiedSeatsList];
+    for(let i=0; i<emptyCount; i++) {
+        allSeats.push({ type: 'empty', seat: `Free Seat`, name: 'Available', photo: null, key: null });
+    }
+
+    let filtered = allSeats.filter(s => {
+        let matchStatus = true;
+        if(status === 'occupied' && s.type !== 'occupied') matchStatus = false;
+        if(status === 'empty' && s.type !== 'empty') matchStatus = false;
+        
+        let matchQuery = true;
+        if(query !== '') matchQuery = s.seat.toLowerCase().includes(query) || s.name.toLowerCase().includes(query);
+        
+        return matchStatus && matchQuery;
+    });
+
+    let html = '';
+    filtered.forEach(s => {
+        if (s.type === 'occupied') {
+            html += `
+            <div class="glass-card bg-slate-800/80 border-t-4 border-t-red-500 rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-700 transition-colors btn-open-profile shadow-[0_4px_10px_rgba(239,68,68,0.15)]" data-key="${s.key}" title="Click to view profile">
+                <img src="${s.photo}" class="w-12 h-12 rounded-full border-2 border-red-500/50 mb-2 object-cover">
+                <h4 class="text-white font-bold text-sm w-full truncate">${s.seat}</h4>
+                <p class="text-xs text-slate-400 w-full truncate">${s.name}</p>
+            </div>`;
+        } else {
+            html += `
+            <div class="glass-card bg-slate-800/40 border-t-4 border-t-emerald-500 rounded-xl p-3 flex flex-col items-center justify-center text-center border-dashed border-slate-600">
+                <div class="w-12 h-12 rounded-full border-2 border-emerald-500/30 mb-2 flex items-center justify-center bg-emerald-900/20"><span class="text-xl">🪑</span></div>
+                <h4 class="text-emerald-400 font-bold text-sm truncate">Empty</h4>
+                <p class="text-[10px] text-slate-500">Available</p>
+            </div>`;
+        }
+    });
+
+    seatGrid.innerHTML = html !== '' ? html : `<div class="col-span-full text-center text-slate-500 py-10">No seats match your search.</div>`;
+    countOccupiedSeats.innerText = occupiedSeatsList.length;
+    countEmptySeats.innerText = emptyCount;
+}
+
+seatSearchQuery.addEventListener('input', renderSeatMap);
+seatFilterStatus.addEventListener('change', renderSeatMap);
+
 function loadCachedDashboard() {
     const cachedData = JSON.parse(localStorage.getItem('adminDashboardCache'));
     if (cachedData) {
@@ -58,18 +138,19 @@ function loadCachedDashboard() {
         statTotalCapacity.innerText = cachedData.totalSeats || 100;
         statAvailableSeats.innerText = (cachedData.totalSeats || 100) - (cachedData.occupiedSeats || 0);
         statPresentToday.innerText = cachedData.presentCount || 0;
-        
         pendingFeesNamesDiv.innerText = cachedData.pendingNamesStr || "No dues pending";
         
         if(cachedData.recentHTML) recentActivityTable.innerHTML = cachedData.recentHTML;
         if(cachedData.pendingHTML) pendingApprovalsTable.innerHTML = cachedData.pendingHTML;
         if(cachedData.allStudentsHTML) allStudentsTable.innerHTML = cachedData.allStudentsHTML;
     }
-    renderSeatMap(); // Render seats from local dict instantly
+    renderSeatMap(); 
 }
 loadCachedDashboard();
 
-// FETCH SEATS CONFIG
+// ==========================================
+// 5. FIREBASE REALTIME FETCHERS
+// ==========================================
 onValue(ref(db, 'totalSeat'), (snapshot) => {
     if (snapshot.exists()) {
         globalTotalSeats = snapshot.val();
@@ -77,15 +158,13 @@ onValue(ref(db, 'totalSeat'), (snapshot) => {
         let cache = JSON.parse(localStorage.getItem('adminDashboardCache')) || {};
         cache.totalSeats = globalTotalSeats;
         localStorage.setItem('adminDashboardCache', JSON.stringify(cache));
-        renderSeatMap(); // Refresh matrix if max limit changes
+        renderSeatMap();
     }
 });
 
-// MAIN STUDENTS ENGINE
 onValue(ref(db, 'Students'), (snapshot) => {
     let totalActive = 0, occupiedSeats = 0;
     let pendingHTML = '', allHTML = '';
-    
     let activeStudentsList = [];
     let pendingFeeNames = [];
     
@@ -108,8 +187,6 @@ onValue(ref(db, 'Students'), (snapshot) => {
             if (student.status === "Approved") {
                 totalActive++;
                 if (student.seatNumber && student.seatNumber.trim() !== "") occupiedSeats++;
-                
-                // Add to array for perfect Time Sorting
                 activeStudentsList.push({ ...student, key: studentKey, photo, feeColor, feeText });
 
                 allHTML += `
@@ -139,7 +216,7 @@ onValue(ref(db, 'Students'), (snapshot) => {
             }
         });
 
-        // SORTING: Newest Registration first
+        // SORTING RECENT STUDENTS
         activeStudentsList.sort((a, b) => parseRegDate(b.registrationTime) - parseRegDate(a.registrationTime));
         
         let recentHTML = '';
@@ -156,7 +233,6 @@ onValue(ref(db, 'Students'), (snapshot) => {
                 </tr>`;
         });
         
-        // Update Stats & UI
         statTotalStudents.innerText = totalActive; 
         statPendingFees.innerText = pendingFeeNames.length; 
         statAvailableSeats.innerText = globalTotalSeats - occupiedSeats; 
@@ -168,7 +244,6 @@ onValue(ref(db, 'Students'), (snapshot) => {
         pendingApprovalsTable.innerHTML = pendingHTML !== '' ? pendingHTML : `<tr><td colspan="4" class="text-center py-8 text-slate-500">No pending approvals! 🎉</td></tr>`;
         allStudentsTable.innerHTML = allHTML !== '' ? allHTML : `<tr><td colspan="5" class="text-center py-8 text-slate-500">No active students found.</td></tr>`;
 
-        // Save Cache
         let cache = JSON.parse(localStorage.getItem('adminDashboardCache')) || {};
         cache.totalActive = totalActive; cache.pendingFees = pendingFeeNames.length; cache.occupiedSeats = occupiedSeats;
         cache.pendingNamesStr = pendingNamesStr;
@@ -194,81 +269,9 @@ onValue(ref(db, 'Attendance'), (snapshot) => {
     cache.presentCount = presentCount; localStorage.setItem('adminDashboardCache', JSON.stringify(cache));
 });
 
-// 🔥 NEW: SEAT MATRIX RENDER ENGINE
-const seatSearchQuery = document.getElementById('seatSearchQuery');
-const seatFilterStatus = document.getElementById('seatFilterStatus');
-
-function renderSeatMap() {
-    const query = seatSearchQuery.value.toLowerCase();
-    const status = seatFilterStatus.value;
-    const seatGrid = document.getElementById('seatGrid');
-    
-    let occupiedSeatsList = [];
-    let emptyCount = globalTotalSeats;
-
-    // Grab Occupied
-    for (let key in allStudentsDict) {
-        const student = allStudentsDict[key];
-        if (student.status === "Approved" && student.seatNumber && student.seatNumber.trim() !== "") {
-            occupiedSeatsList.push({
-                type: 'occupied', seat: student.seatNumber.trim(), name: student.fullName || key,
-                photo: student.photoUrl || `https://ui-avatars.com/api/?name=${student.fullName || 'User'}&background=0D8ABC&color=fff`,
-                key: key
-            });
-            emptyCount--;
-        }
-    }
-    if(emptyCount < 0) emptyCount = 0;
-
-    let allSeats = [...occupiedSeatsList];
-    
-    // Fill the rest with Empty Virtual Seats
-    for(let i=0; i<emptyCount; i++) {
-        allSeats.push({ type: 'empty', seat: `Free Seat`, name: 'Available', photo: null, key: null });
-    }
-
-    // Apply Filters
-    let filtered = allSeats.filter(s => {
-        let matchStatus = true;
-        if(status === 'occupied' && s.type !== 'occupied') matchStatus = false;
-        if(status === 'empty' && s.type !== 'empty') matchStatus = false;
-        
-        let matchQuery = true;
-        if(query !== '') matchQuery = s.seat.toLowerCase().includes(query) || s.name.toLowerCase().includes(query);
-        
-        return matchStatus && matchQuery;
-    });
-
-    // Draw Grid
-    let html = '';
-    filtered.forEach(s => {
-        if (s.type === 'occupied') {
-            html += `
-            <div class="glass-card bg-slate-800/80 border-t-4 border-t-red-500 rounded-xl p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-slate-700 transition-colors btn-open-profile shadow-[0_4px_10px_rgba(239,68,68,0.15)]" data-key="${s.key}" title="Click to view profile">
-                <img src="${s.photo}" class="w-12 h-12 rounded-full border-2 border-red-500/50 mb-2 object-cover">
-                <h4 class="text-white font-bold text-sm w-full truncate">${s.seat}</h4>
-                <p class="text-xs text-slate-400 w-full truncate">${s.name}</p>
-            </div>`;
-        } else {
-            html += `
-            <div class="glass-card bg-slate-800/40 border-t-4 border-t-emerald-500 rounded-xl p-3 flex flex-col items-center justify-center text-center border-dashed border-slate-600">
-                <div class="w-12 h-12 rounded-full border-2 border-emerald-500/30 mb-2 flex items-center justify-center bg-emerald-900/20"><span class="text-xl">🪑</span></div>
-                <h4 class="text-emerald-400 font-bold text-sm truncate">Empty</h4>
-                <p class="text-[10px] text-slate-500">Available</p>
-            </div>`;
-        }
-    });
-
-    seatGrid.innerHTML = html !== '' ? html : `<div class="col-span-full text-center text-slate-500 py-10">No seats match your search.</div>`;
-    document.getElementById('countOccupiedSeats').innerText = occupiedSeatsList.length;
-    document.getElementById('countEmptySeats').innerText = emptyCount;
-}
-
-seatSearchQuery.addEventListener('input', renderSeatMap);
-seatFilterStatus.addEventListener('change', renderSeatMap);
-
-
-// MODAL & PROFILE LOGIC
+// ==========================================
+// 6. PROFILE MODAL LOGIC
+// ==========================================
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('.btn-open-profile');
     if (btn) openProfileModal(btn.getAttribute('data-key'), btn.getAttribute('data-type') === 'approve');
@@ -328,7 +331,9 @@ document.getElementById('searchAllStudents').addEventListener('input', (e) => {
     for (let row of rows) { row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none'; }
 });
 
-// MANUAL ENTRY LOGIC
+// ==========================================
+// 7. MANUAL ENTRY LOGIC
+// ==========================================
 document.getElementById('manualValidTill').placeholder = `e.g., 30 ${monthStr} ${year}`;
 document.getElementById('manualLastPaid').value = `${monthStr} ${year}`;
 

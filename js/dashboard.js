@@ -42,6 +42,17 @@ const countEmptySeats = document.getElementById('countEmptySeats');
 const toggleEditModeBtn = document.getElementById('toggleEditModeBtn');
 const saveProfileBtn = document.getElementById('saveProfileBtn');
 
+// QR & Attendance Elements
+const qrWifiName = document.getElementById('qrWifiName');
+const btnGenerateQR = document.getElementById('btnGenerateQR');
+const qrCodeContainer = document.getElementById('qrCodeContainer');
+const qrCodeImage = document.getElementById('qrCodeImage');
+const qrStatusText = document.getElementById('qrStatusText');
+const manualAttendanceTable = document.getElementById('manualAttendanceTable');
+const searchAttendance = document.getElementById('searchAttendance');
+let currentAttendanceData = {};
+
+// Date Variables
 const today = new Date();
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const date = today.getDate();
@@ -49,6 +60,9 @@ const monthStr = months[today.getMonth()];
 const year = today.getFullYear();
 const dateString1 = `${date < 10 ? '0'+date : date} ${monthStr} ${year}`;
 const dateString2 = `${date} ${monthStr} ${year}`;
+
+// Initialize Display
+document.getElementById('todayDateDisplay').innerText = dateString1; 
 
 let allStudentsDict = JSON.parse(localStorage.getItem('allStudentsDataCache')) || {}; 
 let allPaymentsDict = JSON.parse(localStorage.getItem('allPaymentsDataCache')) || {};
@@ -265,23 +279,11 @@ const studentSnapshotHandler = (snapshot) => {
         localStorage.setItem('allStudentsDataCache', JSON.stringify(allStudentsDict));
         
         renderSeatMap();
-        filterAllStudentsTable(); // Apply any active filter
+        filterAllStudentsTable(); 
+        renderManualAttendanceTable(searchAttendance.value); // Sync Manual table
     }
 };
 onValue(ref(db, 'Students'), studentSnapshotHandler);
-
-onValue(ref(db, 'Attendance'), (snapshot) => {
-    let presentCount = 0;
-    if (snapshot.exists()) {
-        snapshot.forEach((studentSnap) => {
-            const studentAttendance = studentSnap.val();
-            if (studentAttendance[dateString1] || studentAttendance[dateString2]) presentCount++;
-        });
-    }
-    statPresentToday.innerText = presentCount;
-    let cache = JSON.parse(localStorage.getItem('adminDashboardCache')) || {};
-    cache.presentCount = presentCount; localStorage.setItem('adminDashboardCache', JSON.stringify(cache));
-});
 
 // ==========================================
 // 4. SEAT MATRIX RENDER ENGINE
@@ -364,7 +366,6 @@ function filterAllStudentsTable() {
 }
 searchAllStudents.addEventListener('input', filterAllStudentsTable);
 filterAllStudentsStatus.addEventListener('change', filterAllStudentsTable);
-
 
 // ==========================================
 // 6. PROFILE MODAL LOGIC (View/Edit)
@@ -568,3 +569,108 @@ document.getElementById('manualEntryForm').addEventListener('submit', async (e) 
     } catch (error) { alert("Network Error"); } 
     finally { btn.innerHTML = `<span class="mr-2">💾</span> Save Student Direct to System`; btn.disabled = false; }
 });
+
+// ==========================================
+// 9. QR GENERATOR & MANUAL ATTENDANCE LOGIC
+// ==========================================
+// Fetch active QR Config from Firebase
+onValue(ref(db, 'QRConfig/current'), (snapshot) => {
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        if(data.date === dateString1) { 
+            qrWifiName.value = data.wifi;
+            const qrDataString = JSON.stringify(data);
+            qrCodeImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrDataString)}`;
+            qrCodeContainer.classList.remove('hidden');
+            qrStatusText.innerHTML = `<span class="text-emerald-400 font-bold">✅ Active QR Synced.</span><br>Secure Hash: ${data.hash.substring(0,8)}...`;
+        } else {
+            qrStatusText.innerText = "Previous QR expired. Generate new for today.";
+            qrCodeContainer.classList.add('hidden');
+        }
+    }
+});
+
+btnGenerateQR.addEventListener('click', async () => {
+    const wifi = qrWifiName.value.trim() || "Library_Wifi";
+    const randomHash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    
+    const qrPayload = { wifi: wifi, hash: randomHash, date: dateString1, timestamp: Date.now() };
+
+    try {
+        btnGenerateQR.innerHTML = `<span class="mr-2">⏳</span> Generating...`;
+        btnGenerateQR.disabled = true;
+        await set(ref(db, 'QRConfig/current'), qrPayload);
+    } catch(e) { alert("Error syncing QR to Database."); } 
+    finally { btnGenerateQR.innerHTML = `<span class="mr-2">🔄</span> Generate / Change QR`; btnGenerateQR.disabled = false; }
+});
+
+// Single Unified Attendance Listener
+onValue(ref(db, 'Attendance'), (snapshot) => {
+    let presentCount = 0;
+    if (snapshot.exists()) {
+        currentAttendanceData = snapshot.val();
+        snapshot.forEach((studentSnap) => {
+            const studentAttendance = studentSnap.val();
+            if (studentAttendance[dateString1] || studentAttendance[dateString2]) presentCount++;
+        });
+    } else {
+        currentAttendanceData = {};
+    }
+    
+    // Update Dashboard Header Stats
+    statPresentToday.innerText = presentCount;
+    let cache = JSON.parse(localStorage.getItem('adminDashboardCache')) || {};
+    cache.presentCount = presentCount; 
+    localStorage.setItem('adminDashboardCache', JSON.stringify(cache));
+    
+    // Auto-update the Manual Attendance Table
+    renderManualAttendanceTable(searchAttendance.value);
+});
+
+function renderManualAttendanceTable(searchQuery = "") {
+    let html = '';
+    for (const key in allStudentsDict) {
+        const student = allStudentsDict[key];
+        if (student.status !== "Approved") continue;
+        
+        if (searchQuery && !student.fullName.toLowerCase().includes(searchQuery.toLowerCase()) && !key.toLowerCase().includes(searchQuery.toLowerCase())) continue;
+
+        const isPresent = currentAttendanceData[key] && (currentAttendanceData[key][dateString1] || currentAttendanceData[key][dateString2]);
+        
+        const actionBtn = isPresent 
+            ? `<button onclick="toggleAttendance('${key}', false)" class="bg-red-900/40 text-red-400 border border-red-500/30 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-red-600 hover:text-white transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)]">Revoke</button>`
+            : `<button onclick="toggleAttendance('${key}', true)" class="bg-emerald-900/40 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition-all">Mark Present</button>`;
+
+        const photoUrl = student.photoUrl || `https://ui-avatars.com/api/?name=${student.fullName}&background=0D8ABC&color=fff`;
+
+        html += `
+        <tr class="border-b border-slate-700/50 hover:bg-slate-800/60 transition-all">
+            <td class="px-4 py-3 flex items-center">
+                <img src="${photoUrl}" class="w-8 h-8 rounded-full border border-slate-500 mr-3 object-cover">
+                <div><div class="text-white font-medium text-xs md:text-sm">${student.fullName}</div><div class="text-[10px] text-slate-500">${key}</div></div>
+            </td>
+            <td class="px-4 py-3 text-cyan-400 text-xs md:text-sm font-bold">${student.seatNumber || '--'}</td>
+            <td class="px-4 py-3">${actionBtn}</td>
+        </tr>`;
+    }
+    manualAttendanceTable.innerHTML = html !== '' ? html : `<tr><td colspan="3" class="text-center py-6 text-slate-400">No students matched.</td></tr>`;
+}
+
+// Global scope function for HTML inline onClick
+window.toggleAttendance = async function(studentKey, markPresent) {
+    try {
+        const attendanceRef = ref(db, `Attendance/${studentKey}/${dateString1}`);
+        if (markPresent) {
+            await set(attendanceRef, {
+                timeIn: new Date().toLocaleTimeString(),
+                status: "Present",
+                markedBy: "Admin Manual"
+            });
+        } else {
+            await set(attendanceRef, null); // Remove if revoked
+        }
+    } catch(e) { alert("Failed to update attendance on server!"); }
+};
+
+searchAttendance.addEventListener('input', (e) => renderManualAttendanceTable(e.target.value));
+

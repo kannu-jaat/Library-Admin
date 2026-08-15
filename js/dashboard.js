@@ -662,7 +662,7 @@ window.toggleAttendance = async function(studentKey, markPresent) {
         const attendanceRef = ref(db, `Attendance/${studentKey}/${dateString1}`);
         if (markPresent) {
             await set(attendanceRef, {
-                timeIn: new Date().toLocaleTimeString(),
+                checkIn: new Date().toLocaleTimeString(),
                 status: "Present",
                 markedBy: "Admin Manual"
             });

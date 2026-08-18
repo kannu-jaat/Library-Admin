@@ -35,6 +35,12 @@
 
         input:disabled, select:disabled { background-color: rgba(15, 23, 42, 0.6) !important; color: #94a3b8 !important; cursor: not-allowed; border-color: rgba(255,255,255,0.05) !important; }
         ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        
+        /* Toggle Switch Animation Utilities */
+        .toggle-switch[data-status="yes"] { background-color: #10b981; }
+        .toggle-switch[data-status="no"] { background-color: #475569; }
+        .toggle-switch[data-status="yes"] .toggle-circle { transform: translateX(24px); }
+        .toggle-switch[data-status="no"] .toggle-circle { transform: translateX(0); }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-200 h-screen flex overflow-hidden font-sans relative">
@@ -79,9 +85,8 @@
                 <a id="nav-fees" class="nav-item flex items-center px-6 py-3 text-slate-300">
                     <span class="text-xl mr-3">💳</span> Fees & Approvals
                 </a>
-                <!-- 🔥 QR Navigation -->
                 <a id="nav-qr" class="nav-item flex items-center px-6 py-3 text-slate-300">
-                    <span class="text-xl mr-3">📱</span> QR & Attendance
+                    <span class="text-xl mr-3">📱</span> QR & App Settings
                 </a>
                 <a id="nav-notices" class="nav-item flex items-center px-6 py-3 text-slate-300">
                     <span class="text-xl mr-3">🔔</span> Send Notifications
@@ -196,7 +201,7 @@
                     </div>
                 </div>
 
-                <!-- VIEW 3: ALL STUDENTS (Status Filter Added) -->
+                <!-- VIEW 3: ALL STUDENTS -->
                 <div id="view-all-students" class="view-section hidden w-full">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700/50 pb-4 space-y-4 md:space-y-0">
                         <h2 class="text-xl md:text-2xl font-bold text-white">All <span class="text-cyan-400 font-light">Students</span></h2>
@@ -311,29 +316,57 @@
                     </div>
                 </div>
 
-                <!-- 🔥 VIEW 7: QR & ATTENDANCE MANAGEMENT -->
+                <!-- 🔥 VIEW 7: QR & APP SETTINGS -->
                 <div id="view-qr" class="view-section hidden w-full">
-                    <h2 class="text-xl md:text-2xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">QR & <span class="text-cyan-400 font-light">Attendance</span></h2>
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-6 border-b border-slate-700/50 pb-4">QR & <span class="text-cyan-400 font-light">App Settings</span></h2>
                     
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- QR Generator Box -->
+                        <!-- QR Generator & App Features Box -->
                         <div class="glass-card rounded-xl p-4 md:p-6 flex flex-col items-center">
-                            <h3 class="text-lg font-bold text-white mb-4">Daily QR Generator</h3>
-                            <div class="w-full space-y-4 mb-6">
+                            <h3 class="text-lg font-bold text-white mb-4">QR & IP Settings</h3>
+                            <div class="w-full space-y-4 mb-4">
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-400 mb-1">Wi-Fi Name (SSID)</label>
-                                    <input type="text" id="qrWifiName" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm" placeholder="e.g. Library_Wifi_5G">
+                                    <label class="block text-xs font-medium text-slate-400 mb-1">Library Public IP (Auto-detected)</label>
+                                    <div class="flex space-x-2">
+                                        <input type="text" id="qrIpAddress" class="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-cyan-500" placeholder="e.g. 157.38.149.14">
+                                        <button id="btnFetchIp" class="bg-slate-700 hover:bg-cyan-600 text-white px-3 py-2 rounded-lg text-xs transition-colors" title="Re-fetch My IP">🔄</button>
+                                    </div>
                                 </div>
                             </div>
+                            
                             <!-- QR Display -->
                             <div id="qrCodeContainer" class="bg-white p-2 rounded-xl hidden mb-4 shadow-[0_0_15px_rgba(0,255,255,0.3)]">
                                 <img id="qrCodeImage" src="" alt="QR Code" class="w-48 h-48">
                             </div>
-                            <p id="qrStatusText" class="text-xs text-slate-400 mb-4 text-center">No active QR generated for today.</p>
+                            <p id="qrStatusText" class="text-[11px] text-slate-400 mb-4 text-center leading-relaxed">Loading QR data...</p>
                             
-                            <button id="btnGenerateQR" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 px-4 rounded-lg flex items-center justify-center transition-all">
-                                <span class="mr-2">🔄</span> Generate / Change QR
-                            </button>
+                            <div class="w-full grid grid-cols-2 gap-3 mb-6">
+                                <button id="btnGenerateQR" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 px-2 rounded-lg text-[11px] md:text-xs transition-all shadow-[0_0_10px_rgba(8,145,178,0.4)]">
+                                    ✨ Generate New QR
+                                </button>
+                                <button id="btnUpdateIpOnly" class="w-full bg-slate-700 hover:bg-slate-600 border border-slate-500 text-white font-bold py-2.5 px-2 rounded-lg text-[11px] md:text-xs transition-all">
+                                    💾 Update IP Only
+                                </button>
+                            </div>
+
+                            <!-- App Features Toggles -->
+                            <div class="w-full pt-4 border-t border-slate-700/80">
+                                <h4 class="text-sm font-bold text-white mb-3 tracking-wide">App Features Control</h4>
+                                
+                                <div class="flex items-center justify-between mb-3 bg-slate-800/40 border border-slate-700 p-2.5 rounded-lg">
+                                    <span class="text-xs text-slate-300 font-medium">Strict IP Match (Wifi)</span>
+                                    <button id="toggleIpFeature" class="toggle-switch w-12 h-6 rounded-full relative transition-colors duration-300 focus:outline-none shadow-inner" data-status="no">
+                                        <div class="toggle-circle w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform duration-300 shadow"></div>
+                                    </button>
+                                </div>
+                                
+                                <div class="flex items-center justify-between bg-slate-800/40 border border-slate-700 p-2.5 rounded-lg">
+                                    <span class="text-xs text-slate-300 font-medium">Allow QR Gallery Upload</span>
+                                    <button id="toggleQrUploadFeature" class="toggle-switch w-12 h-6 rounded-full relative transition-colors duration-300 focus:outline-none shadow-inner" data-status="yes">
+                                        <div class="toggle-circle w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform duration-300 shadow"></div>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Manual Attendance Box -->
@@ -449,6 +482,7 @@
 
         <!-- FEES HISTORY & NEW PAYMENT MODAL -->
         <div id="feeHistoryModal" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm transition-opacity">
+            <!-- Refer previous code for inner HTML of Fee modal, it remains same. -->
             <div class="glass-card rounded-xl md:rounded-2xl w-full max-w-5xl max-h-[95vh] overflow-y-auto border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
                 <div class="px-4 py-4 md:px-6 border-b border-slate-700 flex justify-between items-center sticky top-0 bg-slate-800/90 backdrop-blur-md z-10">
                     <h2 class="text-lg md:text-xl font-bold text-white flex items-center"><span class="text-emerald-400 mr-2">💳</span> Fees History & Add Payment</h2>
@@ -526,7 +560,6 @@
         document.getElementById('closeSidebarBtn').addEventListener('click', toggleSidebar);
         sidebarBackdrop.addEventListener('click', toggleSidebar);
 
-        // 🔥 View Switcher with QR updated
         const views = {
             'nav-dashboard': { id: 'view-dashboard', title: 'Dashboard <span class="text-cyan-400 font-light">Overview</span>' },
             'nav-approvals': { id: 'view-approvals', title: 'Pending <span class="text-amber-400 font-light">Approvals</span>', name: "Pending Approvals Module" },
@@ -534,7 +567,7 @@
             'nav-manual-entry': { id: 'view-manual-entry', title: 'Manual <span class="text-cyan-400 font-light">Entry</span>', name: "Student Manual Entry Form" },
             'nav-seats': { id: 'view-seats', title: 'Seat <span class="text-cyan-400 font-light">Matrix</span>', name: "Visual Seat Layout" },
             'nav-fees': { id: 'view-fees', title: 'Fees <span class="text-emerald-400 font-light">Management</span>', name: "Fees & Payment Engine" },
-            'nav-qr': { id: 'view-qr', title: 'QR <span class="text-cyan-400 font-light">Manager</span>', name: "QR Generator" },
+            'nav-qr': { id: 'view-qr', title: 'QR & <span class="text-cyan-400 font-light">Settings</span>', name: "QR Generator" },
             'nav-notices': { id: 'view-placeholder', title: 'Push <span class="text-cyan-400 font-light">Notices</span>', name: "Notification System" }
         };
 
